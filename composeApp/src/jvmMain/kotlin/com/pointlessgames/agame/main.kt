@@ -1,4 +1,4 @@
-package com.pointlessapps.overscrolled
+package com.pointlessgames.agame
 
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
