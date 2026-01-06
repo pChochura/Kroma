@@ -8,6 +8,7 @@ import com.pointlessgames.agame.model.Direction
 import com.pointlessgames.agame.model.LevelData
 import com.pointlessgames.agame.model.UndoState
 import com.pointlessgames.agame.utils.UndoManager
+import com.pointlessgames.agame.utils.levels
 import com.pointlessgames.agame.utils.toDegrees
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,6 +34,10 @@ internal class GameViewModel : ViewModel() {
 
     private var swipeAngle = 0.0
 
+    init {
+        loadLevel(1, levels[0])
+    }
+
     fun loadLevel(level: Int, levelData: LevelData) {
         Solver.clearCache()
         undoManager.clear()
@@ -42,6 +47,9 @@ internal class GameViewModel : ViewModel() {
 
                 level = level,
                 levelData = levelData,
+
+                canMovePreviousLevel = level > 1,
+                canMoveNextLevel = level < levels.size,
 
                 canHint = Solver.getMoveSequences(levelData).isNotEmpty(),
                 possibleMoves = Game.getPossibleMoves(levelData),
@@ -94,7 +102,7 @@ internal class GameViewModel : ViewModel() {
 
     fun onAnimationsFinished() {
         if (loadedState.isFinished) {
-            eventChannel.trySend(Event.LevelFinished)
+            onNextLevelClicked()
         }
     }
 
@@ -155,10 +163,31 @@ internal class GameViewModel : ViewModel() {
         )
     }
 
+    fun onPreviousLevelClicked() {
+        loadLevel(
+            level = loadedState.level - 1,
+            levelData = levels[loadedState.level - 2],
+        )
+        _uiState.update { loadedState.copy(animationMovesForward = false) }
+    }
+
+    fun onNextLevelClicked() {
+        loadLevel(
+            level = loadedState.level + 1,
+            levelData = levels[loadedState.level],
+        )
+        _uiState.update { loadedState.copy(animationMovesForward = true) }
+    }
+
     sealed class GameUiState {
         data class Loaded(
             val level: Int,
             val levelData: LevelData,
+
+            val animationMovesForward: Boolean = true,
+
+            val canMovePreviousLevel: Boolean = false,
+            val canMoveNextLevel: Boolean = false,
 
             val isFinished: Boolean = false,
 
@@ -175,7 +204,5 @@ internal class GameViewModel : ViewModel() {
         data object Loading : GameUiState()
     }
 
-    sealed interface Event {
-        data object LevelFinished : Event
-    }
+    sealed interface Event
 }

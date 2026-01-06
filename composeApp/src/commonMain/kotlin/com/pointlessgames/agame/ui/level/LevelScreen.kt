@@ -1,5 +1,11 @@
 package com.pointlessgames.agame.ui.level
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -23,7 +28,6 @@ import androidx.compose.ui.unit.DpSize
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.pointlessgames.agame.Route
 import com.pointlessgames.agame.ui.components.GameGrid
 import com.pointlessgames.agame.ui.components.IconButton
 import com.pointlessgames.agame.ui.components.InlineLoader
@@ -47,40 +51,30 @@ import kotlinx.coroutines.launch
 @Composable
 internal fun LevelScreen(
     innerPadding: PaddingValues,
-    level: Route.Level,
-    onLevelFinished: () -> Unit,
     viewModel: GameViewModel = viewModel { GameViewModel() },
 ) {
     val coroutineScope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(level) {
-        viewModel.loadLevel(level.level, level.levelData)
-    }
-
     LifecycleResumeEffect(Unit) {
         coroutineScope.launch {
-            viewModel.events.collect {
-                when (it) {
-                    is GameViewModel.Event.LevelFinished -> onLevelFinished()
-                }
-            }
+            viewModel.events.collect {}
         }
 
         onPauseOrDispose { }
     }
 
     when (val state = uiState) {
+        is GameViewModel.GameUiState.Loading -> Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+            content = { InlineLoader() },
+        )
+
         is GameViewModel.GameUiState.Loaded -> LevelContent(
             uiState = state,
             innerPadding = innerPadding,
             viewModel = viewModel,
-        )
-
-        GameViewModel.GameUiState.Loading -> Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
-            content = { InlineLoader() },
         )
     }
 }
@@ -110,10 +104,10 @@ private fun LevelContent(
             ),
         ) {
             IconButton(
-                isEnabled = false,
+                isEnabled = uiState.canMovePreviousLevel,
                 iconRes = Res.drawable.ic_arrow_left,
                 contentDescription = Res.string.go_to_previous_level,
-                onClick = viewModel::onUndoClicked,
+                onClick = viewModel::onPreviousLevelClicked,
                 position = Position.BELOW,
             )
             Text(
@@ -122,16 +116,17 @@ private fun LevelContent(
                 color = MaterialTheme.colorScheme.onBackground,
             )
             IconButton(
-                isEnabled = false,
+                isEnabled = uiState.canMoveNextLevel,
                 iconRes = Res.drawable.ic_arrow_right,
                 contentDescription = Res.string.go_to_next_level,
-                onClick = viewModel::onRedoClicked,
+                onClick = viewModel::onNextLevelClicked,
                 position = Position.BELOW,
             )
         }
 
         BoxWithConstraints(
             modifier = Modifier
+                .fillMaxWidth()
                 .weight(1f)
                 .pointerInput(Unit) {
                     detectDragGestures(
@@ -141,23 +136,33 @@ private fun LevelContent(
                         },
                         onDragEnd = viewModel::onDragEnd,
                     )
-                }
-                .padding(DefaultSpacing.current.extraLarge),
+                },
             contentAlignment = Alignment.Center,
         ) {
-            GameGrid(
-                width = uiState.levelData.width,
-                height = uiState.levelData.height,
-                maxSize = DpSize(
-                    width = this@BoxWithConstraints.maxWidth,
-                    height = this@BoxWithConstraints.maxHeight,
-                ),
-                currentPosition = uiState.levelData.currentPosition,
-                endingPosition = uiState.levelData.endingPosition,
-                possibleMoves = uiState.possibleMoves,
-                tiles = uiState.levelData.tiles,
-                onAnimationsFinished = viewModel::onAnimationsFinished,
-            )
+            AnimatedContent(
+                modifier = Modifier.fillMaxWidth(),
+                targetState = uiState,
+                transitionSpec = {
+                    fadeIn() + slideInHorizontally { if (uiState.animationMovesForward) it / 2 else -it / 2 } togetherWith
+                            fadeOut() + slideOutHorizontally { if (uiState.animationMovesForward) -it / 2 else it / 2 }
+                },
+                contentKey = { it.level },
+                contentAlignment = Alignment.Center,
+            ) {
+                GameGrid(
+                    width = it.levelData.width,
+                    height = it.levelData.height,
+                    maxSize = DpSize(
+                        width = this@BoxWithConstraints.maxWidth,
+                        height = this@BoxWithConstraints.maxHeight,
+                    ),
+                    currentPosition = it.levelData.currentPosition,
+                    endingPosition = it.levelData.endingPosition,
+                    possibleMoves = it.possibleMoves,
+                    tiles = it.levelData.tiles,
+                    onAnimationsFinished = viewModel::onAnimationsFinished,
+                )
+            }
         }
 
         Row(
