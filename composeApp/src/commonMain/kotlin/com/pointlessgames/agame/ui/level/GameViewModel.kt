@@ -3,6 +3,7 @@ package com.pointlessgames.agame.ui.level
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import com.pointlessgames.agame.Game
+import com.pointlessgames.agame.Solver
 import com.pointlessgames.agame.model.Direction
 import com.pointlessgames.agame.model.LevelData
 import com.pointlessgames.agame.model.UndoState
@@ -33,6 +34,7 @@ internal class GameViewModel : ViewModel() {
     private var swipeAngle = 0.0
 
     fun loadLevel(level: Int, levelData: LevelData) {
+        Solver.clearCache()
         undoManager.clear()
         _uiState.update {
             GameUiState.Loaded(
@@ -41,6 +43,7 @@ internal class GameViewModel : ViewModel() {
                 level = level,
                 levelData = levelData,
 
+                canHint = Solver.getMoveSequences(levelData).isNotEmpty(),
                 possibleMoves = Game.getPossibleMoves(levelData),
             )
         }
@@ -55,7 +58,7 @@ internal class GameViewModel : ViewModel() {
                 canUndo = undoManager.canUndo(),
                 canRedo = undoManager.canRedo(),
                 canRestart = undoManager.canUndo(),
-                canHint = false,
+                canHint = Solver.getMoveSequences(levelData).isNotEmpty(),
             )
         }
     }
@@ -134,7 +137,23 @@ internal class GameViewModel : ViewModel() {
         )
     }
 
-    fun onHintClicked() {}
+    fun onHintClicked() {
+        val nextMove = Solver.getBestNextMove(loadedState.levelData)
+
+        undoManager.insertState(
+            UndoState(
+                currentPosition = loadedState.levelData.currentPosition,
+                gridTiles = loadedState.levelData.tiles.toMap(),
+            ),
+        )
+
+        updateState(
+            levelData = Game.performMove(
+                levelData = loadedState.levelData,
+                moveDirection = nextMove,
+            ),
+        )
+    }
 
     sealed class GameUiState {
         data class Loaded(
