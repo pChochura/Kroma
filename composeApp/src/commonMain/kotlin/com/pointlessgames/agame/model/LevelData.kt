@@ -1,5 +1,8 @@
 package com.pointlessgames.agame.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 internal data class LevelData(
     val width: Int,
     val height: Int,

@@ -8,8 +8,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import com.pointlessgames.agame.DefaultSpacing
 import game.composeapp.generated.resources.Res
+import game.composeapp.generated.resources.decrement
 import game.composeapp.generated.resources.ic_minus
 import game.composeapp.generated.resources.ic_plus
+import game.composeapp.generated.resources.increment
 
 @Composable
 internal fun Counter(
@@ -26,6 +28,7 @@ internal fun Counter(
         IconButton(
             isEnabled = count > minValue,
             iconRes = Res.drawable.ic_minus,
+            contentDescription = Res.string.decrement,
             onClick = onDecrement,
         )
 
@@ -37,6 +40,7 @@ internal fun Counter(
         IconButton(
             isEnabled = count < maxValue,
             iconRes = Res.drawable.ic_plus,
+            contentDescription = Res.string.increment,
             onClick = onIncrement,
         )
     }

@@ -28,6 +28,14 @@ internal class UndoManager<T>() {
         return stateStack[++index]
     }
 
+    fun clear(): T {
+        index = -1
+        val firstState = stateStack[0]
+        stateStack.clear()
+
+        return firstState
+    }
+
     fun canUndo(): Boolean = !canRedo() && index >= 0 || canRedo() && index > 0
     fun canRedo(): Boolean = stateStack.isNotEmpty() && index < stateStack.lastIndex
 

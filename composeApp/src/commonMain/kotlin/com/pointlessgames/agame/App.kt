@@ -1,19 +1,16 @@
 package com.pointlessgames.agame
 
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.safeContent
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.pointlessgames.agame.ui.GameViewModel
+import androidx.navigation3.runtime.rememberNavBackStack
 import com.pointlessgames.agame.ui.LevelCreatorScreen
 import com.pointlessgames.agame.ui.LevelScreen
-import com.pointlessgames.agame.ui.LevelViewModel
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -30,30 +27,32 @@ fun App() {
             large = RoundedCornerShape(24f),
         ),
     ) {
-        val levelViewModel = viewModel { LevelViewModel() }
-        val gameViewModel = viewModel { GameViewModel() }
+        Scaffold(
+            contentWindowInsets = WindowInsets.safeContent,
+        ) { innerPadding ->
+            val backStack = rememberNavBackStack(
+                configuration = navigationConfig,
+                Route.LevelCreator,
+            )
 
-        var isLevelCreatorOpen by remember { mutableStateOf(true) }
-
-        Scaffold { innerPadding ->
-            if (isLevelCreatorOpen) {
-                LevelCreatorScreen(
-                    innerPadding = innerPadding,
-                    viewModel = levelViewModel,
-                    onLevelCreated = {
-                        gameViewModel.loadLevel(it)
-                        isLevelCreatorOpen = false
-                    },
-                )
-            } else {
-                LevelScreen(
-                    innerPadding = innerPadding,
-                    viewModel = gameViewModel,
-                    onLevelFinished = {
-                        levelViewModel.reset()
-                        isLevelCreatorOpen = true
-                    }
-                )
+            Navigator(
+                backStack = backStack,
+            ) {
+                entry<Route.LevelCreator> {
+                    println("LOG!, creator: ${LocalContentColor.current}")
+                    LevelCreatorScreen(
+                        innerPadding = innerPadding,
+                        onLevelCreated = { backStack.add(Route.Level(it)) },
+                    )
+                }
+                entry<Route.Level> {
+                    println("LOG!, level: ${LocalContentColor.current}")
+                    LevelScreen(
+                        innerPadding = innerPadding,
+                        levelData = it.levelData,
+                        onLevelFinished = { backStack.removeLastOrNull() },
+                    )
+                }
             }
         }
     }

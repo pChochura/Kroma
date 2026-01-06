@@ -18,19 +18,21 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pointlessgames.agame.DefaultSpacing
 import com.pointlessgames.agame.model.LevelData
 import com.pointlessgames.agame.ui.components.Counter
 import com.pointlessgames.agame.ui.components.IconButton
 import game.composeapp.generated.resources.Res
 import game.composeapp.generated.resources.ic_play
+import game.composeapp.generated.resources.test_the_level
 import kotlinx.coroutines.launch
 
 @Composable
 internal fun LevelCreatorScreen(
     innerPadding: PaddingValues,
-    viewModel: LevelViewModel,
     onLevelCreated: (LevelData) -> Unit,
+    viewModel: LevelViewModel = viewModel { LevelViewModel() },
 ) {
     val coroutineScope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -114,6 +116,7 @@ internal fun LevelCreatorScreen(
             IconButton(
                 isEnabled = true,
                 iconRes = Res.drawable.ic_play,
+                contentDescription = Res.string.test_the_level,
                 size = 64.dp,
                 onClick = viewModel::onStartClicked,
             )

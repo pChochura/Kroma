@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 import kotlin.math.atan2
 
 internal class GameViewModel : ViewModel() {
@@ -28,82 +30,27 @@ internal class GameViewModel : ViewModel() {
     private val eventChannel = Channel<Event>()
     val events = eventChannel.receiveAsFlow()
 
-    private val _uiState = MutableStateFlow(GameUiState())
+    private val _uiState: MutableStateFlow<GameUiState> = MutableStateFlow(GameUiState.Loading)
     val uiState: StateFlow<GameUiState>
         get() = _uiState.asStateFlow()
+
+    private val loadedState: GameUiState.Loaded
+        get() = uiState.value as GameUiState.Loaded
 
     private var swipeAngle = 0.0
 
     fun loadLevel(levelData: LevelData) {
         _uiState.update {
-            it.copy(
+            GameUiState.Loaded(
                 width = levelData.width,
                 height = levelData.height,
                 currentPosition = levelData.startingPosition,
                 endingPosition = levelData.endingPosition,
                 gridTiles = levelData.tiles,
+                isFinished = false,
             )
         }
         calculatePossibleMoves()
-    }
-
-    fun onDrag(dragAmount: Offset) {
-        swipeAngle = atan2(-dragAmount.y, dragAmount.x).toDegrees()
-    }
-
-    fun onDragEnd() {
-        if (uiState.value.possibleMoves.isEmpty()) return
-
-        undoManager.insertState(
-            UndoState(
-                currentPosition = uiState.value.currentPosition,
-                gridTiles = uiState.value.gridTiles.toMap(),
-            ),
-        )
-
-        val moveDirection = when (swipeAngle) {
-            in 45.0..<135.0 -> TOP
-            in 135.0..<225.0 -> LEFT
-            in 225.0..<315.0 -> BOTTOM
-            else -> RIGHT
-        }
-
-        when (moveDirection) {
-            LEFT -> performMove(
-                edgeCondition = { it.x - 1 >= 0 },
-                transformedPosition = { it.copy(x = it.x - 1) },
-                showDirection = moveDirection.opposite,
-            )
-
-            RIGHT -> performMove(
-                edgeCondition = { it.x + 1 < uiState.value.width },
-                transformedPosition = { it.copy(x = it.x + 1) },
-                showDirection = moveDirection.opposite,
-            )
-
-            TOP -> performMove(
-                edgeCondition = { it.y - 1 >= 0 },
-                transformedPosition = { it.copy(y = it.y - 1) },
-                showDirection = moveDirection.opposite,
-            )
-
-            BOTTOM -> performMove(
-                edgeCondition = { it.y + 1 < uiState.value.height },
-                transformedPosition = { it.copy(y = it.y + 1) },
-                showDirection = moveDirection.opposite,
-            )
-        }
-        calculatePossibleMoves()
-        _uiState.update {
-            it.copy(
-                canUndo = undoManager.canUndo(),
-                canRedo = undoManager.canRedo(),
-            )
-        }
-
-        if (uiState.value.currentPosition == uiState.value.endingPosition) {
-            eventChannel.trySend(Event.LevelFinished)
-        }
     }
 
     private fun performMove(
@@ -111,17 +58,17 @@ internal class GameViewModel : ViewModel() {
         transformedPosition: (Position) -> Position,
         showDirection: Direction,
     ) {
-        val currentTile = uiState.value.currentTile
-        var currentPosition = uiState.value.currentPosition
-        val currentGridTiles = uiState.value.gridTiles.toMutableMap()
+        val currentTile = loadedState.currentTile
+        var currentPosition = loadedState.currentPosition
+        val currentGridTiles = loadedState.gridTiles.toMutableMap()
 
         val nextPosition = transformedPosition(currentPosition)
         currentGridTiles[nextPosition]?.let {
             if (it.value != currentTile.value) {
-                _uiState.update { state ->
-                    state.copy(
+                _uiState.update {
+                    loadedState.copy(
                         currentPosition = nextPosition,
-                        gridTiles = state.gridTiles + (nextPosition to GridTile(
+                        gridTiles = loadedState.gridTiles + (nextPosition to GridTile(
                             value = currentTile.value,
                             showFromDirection = showDirection,
                         )),
@@ -153,7 +100,7 @@ internal class GameViewModel : ViewModel() {
         }
 
         _uiState.update {
-            it.copy(
+            loadedState.copy(
                 currentPosition = currentPosition,
                 gridTiles = currentGridTiles,
             )
@@ -173,7 +120,7 @@ internal class GameViewModel : ViewModel() {
 
             if (
                 calculateCanMove(
-                    edgeCondition = { it.x + 1 < uiState.value.width },
+                    edgeCondition = { it.x + 1 < loadedState.width },
                     transformedPosition = { it.copy(x = it.x + 1) },
                 )
             ) {
@@ -191,7 +138,7 @@ internal class GameViewModel : ViewModel() {
 
             if (
                 calculateCanMove(
-                    edgeCondition = { it.y + 1 < uiState.value.height },
+                    edgeCondition = { it.y + 1 < loadedState.height },
                     transformedPosition = { it.copy(y = it.y + 1) },
                 )
             ) {
@@ -199,16 +146,16 @@ internal class GameViewModel : ViewModel() {
             }
         }
 
-        _uiState.update { it.copy(possibleMoves = possibleMoves) }
+        _uiState.update { loadedState.copy(possibleMoves = possibleMoves) }
     }
 
     private fun calculateCanMove(
         edgeCondition: (Position) -> Boolean,
         transformedPosition: (Position) -> Position,
     ): Boolean {
-        val currentTile = uiState.value.currentTile
-        var currentPosition = uiState.value.currentPosition
-        val currentGridTiles = uiState.value.gridTiles
+        val currentTile = loadedState.currentTile
+        var currentPosition = loadedState.currentPosition
+        val currentGridTiles = loadedState.gridTiles
 
         currentGridTiles[transformedPosition(currentPosition)]?.let {
             return it.value != currentTile.value
@@ -225,57 +172,154 @@ internal class GameViewModel : ViewModel() {
                 currentGridTiles[transformedPosition(currentPosition)]?.value != currentTile.value
     }
 
+    private fun isFinished(): Boolean =
+        loadedState.currentPosition == loadedState.endingPosition
+
+    private fun updateState() {
+        _uiState.update {
+            loadedState.copy(
+                isFinished = isFinished(),
+                canUndo = undoManager.canUndo(),
+                canRedo = undoManager.canRedo(),
+                canRestart = undoManager.canUndo(),
+                canHint = false,
+            )
+        }
+    }
+
+    fun onDrag(dragAmount: Offset) {
+        swipeAngle = atan2(-dragAmount.y, dragAmount.x).toDegrees()
+    }
+
+    fun onDragEnd() {
+        val moveDirection = when (swipeAngle) {
+            in 45.0..<135.0 -> TOP
+            in 135.0..<225.0 -> LEFT
+            in 225.0..<315.0 -> BOTTOM
+            else -> RIGHT
+        }
+
+        val state = uiState.value
+        if (!state.canMove(moveDirection)) return
+
+        undoManager.insertState(
+            UndoState(
+                currentPosition = state.currentPosition,
+                gridTiles = state.gridTiles.toMap(),
+            ),
+        )
+
+        when (moveDirection) {
+            LEFT -> performMove(
+                edgeCondition = { it.x - 1 >= 0 },
+                transformedPosition = { it.copy(x = it.x - 1) },
+                showDirection = moveDirection.opposite,
+            )
+
+            RIGHT -> performMove(
+                edgeCondition = { it.x + 1 < state.width },
+                transformedPosition = { it.copy(x = it.x + 1) },
+                showDirection = moveDirection.opposite,
+            )
+
+            TOP -> performMove(
+                edgeCondition = { it.y - 1 >= 0 },
+                transformedPosition = { it.copy(y = it.y - 1) },
+                showDirection = moveDirection.opposite,
+            )
+
+            BOTTOM -> performMove(
+                edgeCondition = { it.y + 1 < state.height },
+                transformedPosition = { it.copy(y = it.y + 1) },
+                showDirection = moveDirection.opposite,
+            )
+        }
+        calculatePossibleMoves()
+        updateState()
+    }
+
+    fun onAnimationsFinished() {
+        if (loadedState.isFinished) {
+            eventChannel.trySend(Event.LevelFinished)
+        }
+    }
+
     fun onUndoClicked() {
         if (!undoManager.canRedo()) {
             undoManager.insertState(
                 UndoState(
-                    currentPosition = uiState.value.currentPosition,
-                    gridTiles = uiState.value.gridTiles.toMap(),
+                    currentPosition = loadedState.currentPosition,
+                    gridTiles = loadedState.gridTiles.toMap(),
                 ),
             )
         }
 
         val state = undoManager.undo()
         _uiState.update {
-            it.copy(
+            loadedState.copy(
                 currentPosition = state.currentPosition,
                 gridTiles = state.gridTiles,
-                canUndo = undoManager.canUndo(),
-                canRedo = undoManager.canRedo(),
             )
         }
         calculatePossibleMoves()
+        updateState()
     }
 
     fun onRedoClicked() {
         val state = undoManager.redo()
         _uiState.update {
-            it.copy(
+            loadedState.copy(
                 currentPosition = state.currentPosition,
                 gridTiles = state.gridTiles,
-                canUndo = undoManager.canUndo(),
-                canRedo = undoManager.canRedo(),
             )
         }
         calculatePossibleMoves()
+        updateState()
     }
 
-    fun onPreviousLevelClicked() {}
-    fun onNextLevelClicked() {}
+    fun onRestartClicked() {
+        val state = undoManager.clear()
+        _uiState.update {
+            loadedState.copy(
+                currentPosition = state.currentPosition,
+                gridTiles = state.gridTiles,
+            )
+        }
+        calculatePossibleMoves()
+        updateState()
+    }
 
-    data class GameUiState(
-        val level: Int = 1,
-        val width: Int = 0,
-        val height: Int = 0,
-        val canUndo: Boolean = false,
-        val canRedo: Boolean = false,
-        val currentPosition: Position = Position(0, 0),
-        val endingPosition: Position = Position(0, 0),
-        val gridTiles: Map<Position, GridTile> = emptyMap(),
-        val possibleMoves: Set<Direction> = emptySet(),
-    ) {
-        val currentTile: GridTile
-            get() = gridTiles.getValue(currentPosition)
+    fun onHintClicked() {}
+
+    sealed class GameUiState {
+        data class Loaded(
+            val isFinished: Boolean = false,
+
+            val width: Int = 1,
+            val height: Int = 1,
+            val canUndo: Boolean = false,
+            val canRedo: Boolean = false,
+            val canRestart: Boolean = false,
+            val canHint: Boolean = false,
+            val currentPosition: Position = Position(0, 0),
+            val endingPosition: Position = Position(0, 0),
+            val gridTiles: Map<Position, GridTile> = emptyMap(),
+            val possibleMoves: Set<Direction> = emptySet(),
+        ) : GameUiState() {
+            val currentTile: GridTile
+                get() = gridTiles.getValue(currentPosition)
+        }
+
+        data object Loading : GameUiState()
+
+        @OptIn(ExperimentalContracts::class)
+        fun canMove(direction: Direction): Boolean {
+            contract {
+                returns(true) implies (this@GameUiState is Loaded)
+            }
+
+            return this is Loaded && possibleMoves.contains(direction)
+        }
     }
 
     sealed interface Event {

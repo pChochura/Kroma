@@ -1,7 +1,9 @@
 package com.pointlessgames.agame.model
 
 import androidx.compose.ui.graphics.Color
+import kotlinx.serialization.Serializable
 
+@Serializable
 internal data class GridTile(
     val value: Int,
     val showFromDirection: Direction? = null,

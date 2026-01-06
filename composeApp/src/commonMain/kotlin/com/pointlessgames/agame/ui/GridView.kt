@@ -73,6 +73,7 @@ internal fun GameGrid(
     possibleMoves: Set<Direction>,
     tiles: Map<Position, GridTile>,
     onTileClicked: ((Position) -> Unit)? = null,
+    onAnimationsFinished: (() -> Unit)? = null,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val density = LocalDensity.current
@@ -99,6 +100,7 @@ internal fun GameGrid(
             )
             currentPossibleMoves = possibleMoves
             isAnimationRunning = false
+            onAnimationsFinished?.invoke()
         }
     }
 
