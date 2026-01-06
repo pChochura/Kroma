@@ -1,4 +1,4 @@
-package com.pointlessgames.agame.ui
+package com.pointlessgames.agame.ui.components
 
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.AnimatedVisibility
@@ -41,7 +41,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.times
-import com.pointlessgames.agame.DefaultSpacing
 import com.pointlessgames.agame.model.Direction
 import com.pointlessgames.agame.model.Direction.BOTTOM
 import com.pointlessgames.agame.model.Direction.LEFT
@@ -49,6 +48,7 @@ import com.pointlessgames.agame.model.Direction.RIGHT
 import com.pointlessgames.agame.model.Direction.TOP
 import com.pointlessgames.agame.model.GridTile
 import com.pointlessgames.agame.model.Position
+import com.pointlessgames.agame.utils.DefaultSpacing
 import com.pointlessgames.agame.utils.filledRoundedRect
 import eu.iamkonstantin.kotlin.gadulka.rememberGadulkaState
 import game.composeapp.generated.resources.Res

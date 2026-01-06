@@ -1,6 +1,6 @@
 TEAM_ID=
 
-PRODUCT_NAME=A Game
+PRODUCT_NAME=com.pointlessgames.agame
 PRODUCT_BUNDLE_IDENTIFIER=com.pointlessgames.agame$(TEAM_ID)
 
 CURRENT_PROJECT_VERSION=1

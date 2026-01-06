@@ -1,4 +1,4 @@
-package com.pointlessgames.agame.ui
+package com.pointlessgames.agame.ui.level
 
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -23,11 +23,12 @@ import androidx.compose.ui.unit.DpSize
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.pointlessgames.agame.DefaultSpacing
 import com.pointlessgames.agame.Route
+import com.pointlessgames.agame.ui.components.GameGrid
 import com.pointlessgames.agame.ui.components.IconButton
 import com.pointlessgames.agame.ui.components.InlineLoader
 import com.pointlessgames.agame.ui.components.Position
+import com.pointlessgames.agame.utils.DefaultSpacing
 import game.composeapp.generated.resources.Res
 import game.composeapp.generated.resources.go_to_next_level
 import game.composeapp.generated.resources.go_to_previous_level

@@ -1,12 +1,12 @@
-package com.pointlessgames.agame.ui
+package com.pointlessgames.agame.ui.levelCreator
 
 import androidx.lifecycle.ViewModel
 import com.pointlessgames.agame.model.GridTile
 import com.pointlessgames.agame.model.LevelData
 import com.pointlessgames.agame.model.Position
-import com.pointlessgames.agame.ui.LevelViewModel.LevelUiState.SelectionMode.End
-import com.pointlessgames.agame.ui.LevelViewModel.LevelUiState.SelectionMode.None
-import com.pointlessgames.agame.ui.LevelViewModel.LevelUiState.SelectionMode.Start
+import com.pointlessgames.agame.ui.levelCreator.LevelCreatorViewModel.LevelCreatorUiState.SelectionMode.End
+import com.pointlessgames.agame.ui.levelCreator.LevelCreatorViewModel.LevelCreatorUiState.SelectionMode.None
+import com.pointlessgames.agame.ui.levelCreator.LevelCreatorViewModel.LevelCreatorUiState.SelectionMode.Start
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,13 +14,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 
-internal class LevelViewModel : ViewModel() {
+internal class LevelCreatorViewModel : ViewModel() {
 
     private val eventChannel = Channel<Event>()
     val events = eventChannel.receiveAsFlow()
 
-    private val _uiState = MutableStateFlow(LevelUiState())
-    val uiState: StateFlow<LevelUiState>
+    private val _uiState = MutableStateFlow(LevelCreatorUiState())
+    val uiState: StateFlow<LevelCreatorUiState>
         get() = _uiState.asStateFlow()
 
     fun onTileClicked(position: Position) {
@@ -91,7 +91,7 @@ internal class LevelViewModel : ViewModel() {
         }
     }
 
-    data class LevelUiState(
+    data class LevelCreatorUiState(
         val width: Int = 3,
         val height: Int = 3,
         val startingPosition: Position = Position(0, 0),

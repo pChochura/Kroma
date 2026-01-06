@@ -1,15 +1,11 @@
-package com.pointlessgames.agame.ui
+package com.pointlessgames.agame.ui.level
 
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import com.pointlessgames.agame.Game
 import com.pointlessgames.agame.model.Direction
-import com.pointlessgames.agame.model.Direction.BOTTOM
-import com.pointlessgames.agame.model.Direction.LEFT
-import com.pointlessgames.agame.model.Direction.RIGHT
-import com.pointlessgames.agame.model.Direction.TOP
 import com.pointlessgames.agame.model.LevelData
-import com.pointlessgames.agame.ui.model.UndoState
+import com.pointlessgames.agame.model.UndoState
 import com.pointlessgames.agame.utils.UndoManager
 import com.pointlessgames.agame.utils.toDegrees
 import kotlinx.coroutines.channels.Channel
@@ -70,10 +66,10 @@ internal class GameViewModel : ViewModel() {
 
     fun onDragEnd() {
         val moveDirection = when (swipeAngle) {
-            in 45.0..<135.0 -> TOP
-            in 135.0..<225.0 -> LEFT
-            in 225.0..<315.0 -> BOTTOM
-            else -> RIGHT
+            in 45.0..<135.0 -> Direction.TOP
+            in 135.0..<225.0 -> Direction.LEFT
+            in 225.0..<315.0 -> Direction.BOTTOM
+            else -> Direction.RIGHT
         }
 
         if (!loadedState.canMove(moveDirection)) return

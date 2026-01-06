@@ -1,4 +1,4 @@
-package com.pointlessgames.agame.ui
+package com.pointlessgames.agame.ui.levelCreator
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -19,10 +19,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.pointlessgames.agame.DefaultSpacing
 import com.pointlessgames.agame.model.LevelData
 import com.pointlessgames.agame.ui.components.Counter
+import com.pointlessgames.agame.ui.components.GameGrid
 import com.pointlessgames.agame.ui.components.IconButton
+import com.pointlessgames.agame.utils.DefaultSpacing
 import game.composeapp.generated.resources.Res
 import game.composeapp.generated.resources.ic_play
 import game.composeapp.generated.resources.test_the_level
@@ -32,7 +33,7 @@ import kotlinx.coroutines.launch
 internal fun LevelCreatorScreen(
     innerPadding: PaddingValues,
     onLevelCreated: (LevelData) -> Unit,
-    viewModel: LevelViewModel = viewModel { LevelViewModel() },
+    viewModel: LevelCreatorViewModel = viewModel { LevelCreatorViewModel() },
 ) {
     val coroutineScope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -41,7 +42,7 @@ internal fun LevelCreatorScreen(
         coroutineScope.launch {
             viewModel.events.collect {
                 when (it) {
-                    is LevelViewModel.Event.LevelCreated -> onLevelCreated(it.levelData)
+                    is LevelCreatorViewModel.Event.LevelCreated -> onLevelCreated(it.levelData)
                 }
             }
         }

@@ -12,8 +12,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.navigation3.runtime.rememberNavBackStack
-import com.pointlessgames.agame.ui.LevelCreatorScreen
-import com.pointlessgames.agame.ui.LevelScreen
+import com.pointlessgames.agame.ui.level.LevelScreen
+import com.pointlessgames.agame.ui.levelCreator.LevelCreatorScreen
 import com.pointlessgames.agame.utils.levels
 import org.jetbrains.compose.ui.tooling.preview.Preview
 

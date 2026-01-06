@@ -1,5 +1,6 @@
 package com.pointlessgames.agame.ui.components
 
+import androidx.compose.animation.animateColor
 import androidx.compose.animation.core.EaseInOutElastic
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -8,12 +9,12 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 
@@ -44,8 +45,18 @@ internal fun InlineLoader() {
             repeatMode = RepeatMode.Reverse,
         )
     )
+    val color by transition.animateColor(
+        initialValue = Color(192, 133, 82),
+        targetValue = Color(137, 87, 55),
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = ANIMATION_DURATION,
+                easing = EaseInOutElastic,
+            ),
+            repeatMode = RepeatMode.Reverse,
+        )
+    )
 
-    val color = MaterialTheme.colorScheme.primary
     Box(
         modifier = Modifier
             .size(64.dp)
