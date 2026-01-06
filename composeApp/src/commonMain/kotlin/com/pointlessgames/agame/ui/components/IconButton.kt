@@ -25,6 +25,8 @@ import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
+internal enum class Position { ABOVE, BELOW }
+
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 internal fun IconButton(
@@ -32,11 +34,15 @@ internal fun IconButton(
     iconRes: DrawableResource,
     contentDescription: StringResource,
     onClick: () -> Unit,
+    position: Position = Position.ABOVE,
     size: Dp = 32.dp,
 ) {
     BasicTooltipBox(
         positionProvider = TooltipDefaults.rememberTooltipPositionProvider(
-            positioning = TooltipAnchorPosition.Above,
+            positioning = when (position) {
+                Position.ABOVE -> TooltipAnchorPosition.Above
+                Position.BELOW -> TooltipAnchorPosition.Below
+            },
         ),
         tooltip = {
             Text(

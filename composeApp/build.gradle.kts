@@ -1,4 +1,7 @@
+@file:OptIn(ExperimentalWasmDsl::class)
+
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -23,7 +26,7 @@ kotlin {
 
     jvm()
 
-    js {
+    wasmJs {
         browser()
         binaries.executable()
     }
@@ -45,6 +48,8 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel.compose)
             implementation(libs.jetbrains.navigation3.ui)
             implementation(libs.jetbrains.lifecycle.viewmodelNavigation3)
+
+            implementation(libs.gadulka)
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)

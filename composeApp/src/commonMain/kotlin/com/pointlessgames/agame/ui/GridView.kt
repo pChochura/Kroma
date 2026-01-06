@@ -50,11 +50,13 @@ import com.pointlessgames.agame.model.Direction.TOP
 import com.pointlessgames.agame.model.GridTile
 import com.pointlessgames.agame.model.Position
 import com.pointlessgames.agame.utils.filledRoundedRect
+import eu.iamkonstantin.kotlin.gadulka.rememberGadulkaState
 import game.composeapp.generated.resources.Res
 import game.composeapp.generated.resources.ic_arrow_bottom
 import game.composeapp.generated.resources.ic_arrow_left
 import game.composeapp.generated.resources.ic_arrow_right
 import game.composeapp.generated.resources.ic_arrow_top
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
@@ -84,7 +86,7 @@ internal fun GameGrid(
     val tileSize = minOf(tileSizeByWidth, tileSizeByHeight)
 
     var isAnimationRunning by remember { mutableStateOf(false) }
-    var currentPossibleMoves by remember { mutableStateOf(emptySet<Direction>()) }
+    var currentPossibleMoves by remember(Unit) { mutableStateOf(possibleMoves) }
     val playerColor = Animatable(EMPTY_CELLS_COLOR)
     val animatedCurrentPosition by animateOffsetAsState(
         Offset(
@@ -106,6 +108,12 @@ internal fun GameGrid(
 
     LaunchedEffect(currentPosition) {
         isAnimationRunning = true
+    }
+
+    LaunchedEffect(tiles) {
+        if (!isAnimationRunning) {
+            currentPossibleMoves = possibleMoves
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -202,6 +210,7 @@ private fun GridTile(
     onClicked: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
+    val gadulka = rememberGadulkaState()
     val coroutineScope = rememberCoroutineScope()
 
     var previousShowDirection by remember { mutableStateOf<Direction?>(null) }
@@ -217,6 +226,11 @@ private fun GridTile(
         }
 
         previousShowDirection?.let {
+            coroutineScope.launch {
+                delay(gridTile.animationOffset.toLong())
+                gadulka.play(Res.getUri("files/tile_turned_01.wav"))
+            }
+
             animateShowByDirection(
                 direction = it,
                 animatableX = rotationXAnimation,

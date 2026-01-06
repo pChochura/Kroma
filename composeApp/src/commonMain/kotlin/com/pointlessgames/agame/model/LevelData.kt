@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 internal data class LevelData(
     val width: Int,
     val height: Int,
-    val startingPosition: Position,
+    val currentPosition: Position,
     val endingPosition: Position,
     val tiles: Map<Position, GridTile>,
 )

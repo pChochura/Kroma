@@ -20,7 +20,10 @@ import kotlinx.serialization.modules.polymorphic
 
 internal sealed interface Route : NavKey {
     @Serializable
-    data class Level(val levelData: LevelData) : Route
+    data class Level(
+        val level: Int,
+        val levelData: LevelData,
+    ) : Route
 
     @Serializable
     data object LevelCreator : Route

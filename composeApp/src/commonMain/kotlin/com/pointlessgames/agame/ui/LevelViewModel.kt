@@ -69,7 +69,7 @@ internal class LevelViewModel : ViewModel() {
                     LevelData(
                         width = uiState.value.width,
                         height = uiState.value.height,
-                        startingPosition = uiState.value.startingPosition,
+                        currentPosition = uiState.value.startingPosition,
                         endingPosition = uiState.value.endingPosition,
                         tiles = uiState.value.gridTiles,
                     )

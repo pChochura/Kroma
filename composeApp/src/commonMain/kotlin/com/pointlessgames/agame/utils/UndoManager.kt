@@ -6,11 +6,11 @@ internal class UndoManager<T>() {
     private val stateStack: MutableList<T> = mutableListOf()
 
     fun insertState(state: T) {
-        if (stateStack.getOrNull(index) == state) return
-
         if (canRedo()) {
             clearRedoQueue()
         }
+
+        if (stateStack.getOrNull(index) == state) return
 
         index++
         stateStack.add(state)
@@ -28,9 +28,9 @@ internal class UndoManager<T>() {
         return stateStack[++index]
     }
 
-    fun clear(): T {
+    fun clear(): T? {
         index = -1
-        val firstState = stateStack[0]
+        val firstState = stateStack.getOrNull(0)
         stateStack.clear()
 
         return firstState

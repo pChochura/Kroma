@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -22,10 +24,15 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pointlessgames.agame.DefaultSpacing
-import com.pointlessgames.agame.model.LevelData
+import com.pointlessgames.agame.Route
 import com.pointlessgames.agame.ui.components.IconButton
 import com.pointlessgames.agame.ui.components.InlineLoader
+import com.pointlessgames.agame.ui.components.Position
 import game.composeapp.generated.resources.Res
+import game.composeapp.generated.resources.go_to_next_level
+import game.composeapp.generated.resources.go_to_previous_level
+import game.composeapp.generated.resources.ic_arrow_left
+import game.composeapp.generated.resources.ic_arrow_right
 import game.composeapp.generated.resources.ic_hint
 import game.composeapp.generated.resources.ic_redo
 import game.composeapp.generated.resources.ic_restart
@@ -39,15 +46,15 @@ import kotlinx.coroutines.launch
 @Composable
 internal fun LevelScreen(
     innerPadding: PaddingValues,
-    levelData: LevelData,
+    level: Route.Level,
     onLevelFinished: () -> Unit,
     viewModel: GameViewModel = viewModel { GameViewModel() },
 ) {
     val coroutineScope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(levelData) {
-        viewModel.loadLevel(levelData)
+    LaunchedEffect(level) {
+        viewModel.loadLevel(level.level, level.levelData)
     }
 
     LifecycleResumeEffect(Unit) {
@@ -93,6 +100,35 @@ private fun LevelContent(
             alignment = Alignment.CenterVertically,
         ),
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(
+                space = DefaultSpacing.current.medium,
+                alignment = Alignment.CenterHorizontally,
+            ),
+        ) {
+            IconButton(
+                isEnabled = false,
+                iconRes = Res.drawable.ic_arrow_left,
+                contentDescription = Res.string.go_to_previous_level,
+                onClick = viewModel::onUndoClicked,
+                position = Position.BELOW,
+            )
+            Text(
+                text = "${uiState.level}",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onBackground,
+            )
+            IconButton(
+                isEnabled = false,
+                iconRes = Res.drawable.ic_arrow_right,
+                contentDescription = Res.string.go_to_next_level,
+                onClick = viewModel::onRedoClicked,
+                position = Position.BELOW,
+            )
+        }
+
         BoxWithConstraints(
             modifier = Modifier
                 .weight(1f)
@@ -109,16 +145,16 @@ private fun LevelContent(
             contentAlignment = Alignment.Center,
         ) {
             GameGrid(
-                width = uiState.width,
-                height = uiState.height,
+                width = uiState.levelData.width,
+                height = uiState.levelData.height,
                 maxSize = DpSize(
                     width = this@BoxWithConstraints.maxWidth,
                     height = this@BoxWithConstraints.maxHeight,
                 ),
-                currentPosition = uiState.currentPosition,
-                endingPosition = uiState.endingPosition,
+                currentPosition = uiState.levelData.currentPosition,
+                endingPosition = uiState.levelData.endingPosition,
                 possibleMoves = uiState.possibleMoves,
-                tiles = uiState.gridTiles,
+                tiles = uiState.levelData.tiles,
                 onAnimationsFinished = viewModel::onAnimationsFinished,
             )
         }
