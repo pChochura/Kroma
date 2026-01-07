@@ -102,6 +102,12 @@ internal class GameViewModel : ViewModel() {
 
     fun onAnimationsFinished() {
         if (loadedState.isFinished) {
+            if (loadedState.level >= levels.lastIndex) {
+                eventChannel.trySend(Event.Finished)
+
+                return
+            }
+
             onNextLevelClicked()
         }
     }
@@ -204,5 +210,7 @@ internal class GameViewModel : ViewModel() {
         data object Loading : GameUiState()
     }
 
-    sealed interface Event
+    sealed interface Event {
+        data object Finished : Event
+    }
 }

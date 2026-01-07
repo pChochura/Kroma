@@ -26,6 +26,8 @@ import com.pointlessgames.agame.ui.components.IconButton
 import com.pointlessgames.agame.utils.DefaultSpacing
 import game.composeapp.generated.resources.Res
 import game.composeapp.generated.resources.ic_play
+import game.composeapp.generated.resources.ic_restart
+import game.composeapp.generated.resources.restart_the_level
 import game.composeapp.generated.resources.test_the_level
 import kotlinx.coroutines.launch
 
@@ -114,13 +116,22 @@ internal fun LevelCreatorScreen(
                 }
             }
 
-            IconButton(
-                isEnabled = true,
-                iconRes = Res.drawable.ic_play,
-                contentDescription = Res.string.test_the_level,
-                size = 64.dp,
-                onClick = viewModel::onStartClicked,
-            )
+            Column {
+                IconButton(
+                    isEnabled = true,
+                    iconRes = Res.drawable.ic_play,
+                    contentDescription = Res.string.test_the_level,
+                    size = 64.dp,
+                    onClick = viewModel::onStartClicked,
+                )
+                IconButton(
+                    isEnabled = true,
+                    iconRes = Res.drawable.ic_restart,
+                    contentDescription = Res.string.restart_the_level,
+                    size = 64.dp,
+                    onClick = viewModel::onRestartClicked,
+                )
+            }
         }
     }
 }

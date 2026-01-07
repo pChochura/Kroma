@@ -4,7 +4,7 @@ import com.pointlessgames.agame.model.GridTile
 import com.pointlessgames.agame.model.LevelData
 import com.pointlessgames.agame.model.Position
 
-internal val levels = listOf(
+internal val levels = mutableListOf(
     LevelData(
         width = 3,
         height = 3,

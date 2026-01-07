@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -33,6 +34,7 @@ import com.pointlessgames.agame.ui.components.IconButton
 import com.pointlessgames.agame.ui.components.InlineLoader
 import com.pointlessgames.agame.ui.components.Position
 import com.pointlessgames.agame.utils.DefaultSpacing
+import com.pointlessgames.agame.utils.levels
 import game.composeapp.generated.resources.Res
 import game.composeapp.generated.resources.go_to_next_level
 import game.composeapp.generated.resources.go_to_previous_level
@@ -51,6 +53,7 @@ import kotlinx.coroutines.launch
 @Composable
 internal fun LevelScreen(
     innerPadding: PaddingValues,
+    onFinished: () -> Unit,
     viewModel: GameViewModel = viewModel { GameViewModel() },
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -58,10 +61,18 @@ internal fun LevelScreen(
 
     LifecycleResumeEffect(Unit) {
         coroutineScope.launch {
-            viewModel.events.collect {}
+            viewModel.events.collect {
+                when (it) {
+                    is GameViewModel.Event.Finished -> onFinished()
+                }
+            }
         }
 
         onPauseOrDispose { }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.loadLevel(1, levels[0])
     }
 
     when (val state = uiState) {

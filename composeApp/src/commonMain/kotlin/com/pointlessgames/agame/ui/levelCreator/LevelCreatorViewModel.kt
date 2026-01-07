@@ -78,7 +78,7 @@ internal class LevelCreatorViewModel : ViewModel() {
         }
     }
 
-    fun reset() {
+    fun onRestartClicked() {
         _uiState.update {
             it.copy(
                 width = 3,
