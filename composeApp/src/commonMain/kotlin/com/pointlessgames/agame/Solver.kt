@@ -6,99 +6,70 @@ import com.pointlessgames.agame.model.LevelData
 internal object Solver {
 
     /**
-     * A cache to store the computed solutions for a given level state.
-     * The key is the LevelData and the value is the list of move sequences that solve it.
+     * Cache to store the shortest move sequence for a given level state.
      */
-    private val cache = mutableMapOf<LevelData, List<List<Direction>>>()
     private val bestSequenceCache = mutableMapOf<LevelData, List<Direction>>()
 
     /**
-     * Clears the cache. This should be called whenever a new, unrelated solving process begins,
-     * for instance, when starting a new level.
+     * Clears the cache.
      */
     fun clearCache() {
-        cache.clear()
         bestSequenceCache.clear()
     }
 
     /**
-     * Finds the best next move for a given level state.
-     *
-     * @param levelData The current state of the level.
+     * Finds the best next move for a given level state by finding the shortest solution.
      */
-    fun getBestNextMove(levelData: LevelData): Direction {
-        if (bestSequenceCache.contains(levelData)) {
-            return bestSequenceCache.getValue(levelData).first()
-        }
-
-        val movesSequences = getMoveSequences(levelData)
-        val bestMoveSequence = movesSequences.minBy { it.size }
-        bestSequenceCache[levelData] = bestMoveSequence
-
-        return bestMoveSequence.first()
+    fun getBestNextMove(levelData: LevelData): Direction? {
+        val bestSequence = getBestMoveSequence(levelData)
+        // Return the first move of the sequence, or null if no solution exists.
+        return bestSequence?.firstOrNull()
     }
 
     /**
-     * Recursively finds all possible move sequences from a given level state, using a cache to store results.
+     * Finds the shortest move sequence from a given level state using Breadth-First Search (BFS).
+     * This is more efficient for finding the optimal solution than the previous recursive approach.
      *
-     * @param levelData The current state of the level.
-     * @param currentSequence The sequence of moves made to reach the current state.
-     * @return A list of all possible solution sequences.
+     * @param levelData The starting state of the level.
+     * @return The shortest list of directions to solve the level, or null if no solution is found.
      */
-    fun getMoveSequences(
-        levelData: LevelData,
-        currentSequence: List<Direction> = emptyList(),
-    ): List<List<Direction>> {
-        // First, check the cache for an existing solution for the current state.
-        if (cache.containsKey(levelData)) {
-            // If a result is found, adjust the cached sequences by prepending the current move sequence.
-            return cache.getValue(levelData).map { currentSequence + it }
+    fun getBestMoveSequence(levelData: LevelData): List<Direction>? {
+        if (bestSequenceCache.containsKey(levelData)) {
+            return bestSequenceCache[levelData]
         }
 
-        // A list to hold all found solutions starting from this path
-        val solutions = mutableListOf<List<Direction>>()
+        // Use a queue for BFS, storing pairs of (level state, path to reach it)
+        val queue = ArrayDeque<Pair<LevelData, List<Direction>>>()
+        queue.add(levelData to emptyList())
 
-        // Base case: If the level is finished, the current sequence is a valid solution.
-        if (Game.isFinished(levelData)) {
-            solutions.add(currentSequence)
-            // Cache the result for this finished state (an empty sequence from this point).
-            cache[levelData] = listOf(emptyList())
-            return solutions
-        }
+        // Keep track of visited states to avoid cycles and redundant work.
+        val visited = mutableSetOf<LevelData>()
+        visited.add(levelData)
 
-        // Get all possible moves from the current state.
-        val possibleMoves = Game.getPossibleMoves(levelData)
+        while (queue.isNotEmpty()) {
+            val (currentLevel, path) = queue.removeFirst()
 
-        // If there are no more moves and the game is not finished, this path is a dead end.
-        if (possibleMoves.isEmpty()) {
-            // Cache the fact that this state has no solution.
-            cache[levelData] = emptyList()
-            return emptyList()
-        }
+            // If the current state is finished, we have found the shortest path.
+            if (Game.isFinished(currentLevel)) {
+                // Cache and return the solution.
+                bestSequenceCache[levelData] = path
+                return path
+            }
 
-        val solutionsForCache = mutableListOf<List<Direction>>()
-        // Recursive step: Explore each possible move.
-        possibleMoves.forEach { move ->
-            // Create a new state by applying the move
-            val nextLevelData = Game.performMove(levelData, move)
+            // Explore all possible moves from the current state.
+            Game.getPossibleMoves(currentLevel).forEach { move ->
+                val nextLevelData = Game.performMove(currentLevel, move)
 
-            // Recursively call the function for the new state. Note that we pass an empty currentSequence
-            // because the full sequence will be reconstructed from the cache results.
-            val subsequentSolutions = getMoveSequences(
-                levelData = nextLevelData,
-                currentSequence = emptyList(), // Pass an empty list to simplify caching logic
-            )
-
-            // For each solution found from the next state, prepend the current move and add it to our list.
-            subsequentSolutions.forEach { sequence ->
-                solutionsForCache.add(listOf(move) + sequence)
+                // If we haven't visited this state before, add it to the queue.
+                if (visited.add(nextLevelData)) {
+                    val newPath = path + move
+                    queue.add(nextLevelData to newPath)
+                }
             }
         }
 
-        // Store the computed solutions for the current state in the cache.
-        cache[levelData] = solutionsForCache
-
-        // Reconstruct the full solution paths for the initial caller.
-        return solutionsForCache.map { currentSequence + it }
+        // If the queue becomes empty and no solution was found, cache that no solution exists.
+        bestSequenceCache[levelData] = emptyList() // Representing no solution
+        return null
     }
 }

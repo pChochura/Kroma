@@ -51,7 +51,7 @@ internal class GameViewModel : ViewModel() {
                 canMovePreviousLevel = level > 1,
                 canMoveNextLevel = level < levels.size,
 
-                canHint = Solver.getMoveSequences(levelData).isNotEmpty(),
+                canHint = !Solver.getBestMoveSequence(levelData).isNullOrEmpty(),
                 possibleMoves = Game.getPossibleMoves(levelData),
             )
         }
@@ -66,7 +66,7 @@ internal class GameViewModel : ViewModel() {
                 canUndo = undoManager.canUndo(),
                 canRedo = undoManager.canRedo(),
                 canRestart = undoManager.canUndo(),
-                canHint = Solver.getMoveSequences(levelData).isNotEmpty(),
+                canHint = !Solver.getBestMoveSequence(levelData).isNullOrEmpty(),
             )
         }
     }
@@ -152,7 +152,9 @@ internal class GameViewModel : ViewModel() {
     }
 
     fun onHintClicked() {
-        val nextMove = Solver.getBestNextMove(loadedState.levelData)
+        val nextMove = requireNotNull(Solver.getBestNextMove(loadedState.levelData)) {
+            "Could not find a solution for this level."
+        }
 
         undoManager.insertState(
             UndoState(
