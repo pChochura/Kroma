@@ -25,6 +25,8 @@ import com.pointlessgames.agame.ui.components.GameGrid
 import com.pointlessgames.agame.ui.components.IconButton
 import com.pointlessgames.agame.utils.DefaultSpacing
 import game.composeapp.generated.resources.Res
+import game.composeapp.generated.resources.generate_the_level
+import game.composeapp.generated.resources.ic_generate
 import game.composeapp.generated.resources.ic_play
 import game.composeapp.generated.resources.ic_restart
 import game.composeapp.generated.resources.restart_the_level
@@ -121,15 +123,22 @@ internal fun LevelCreatorScreen(
                     isEnabled = true,
                     iconRes = Res.drawable.ic_play,
                     contentDescription = Res.string.test_the_level,
-                    size = 64.dp,
+                    size = 48.dp,
                     onClick = viewModel::onStartClicked,
                 )
                 IconButton(
                     isEnabled = true,
                     iconRes = Res.drawable.ic_restart,
                     contentDescription = Res.string.restart_the_level,
-                    size = 64.dp,
+                    size = 48.dp,
                     onClick = viewModel::onRestartClicked,
+                )
+                IconButton(
+                    isEnabled = true,
+                    iconRes = Res.drawable.ic_generate,
+                    contentDescription = Res.string.generate_the_level,
+                    size = 48.dp,
+                    onClick = viewModel::onGenerateLevelClicked,
                 )
             }
         }

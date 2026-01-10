@@ -1,6 +1,7 @@
 package com.pointlessgames.agame.ui.levelCreator
 
 import androidx.lifecycle.ViewModel
+import com.pointlessgames.agame.Generator
 import com.pointlessgames.agame.model.GridTile
 import com.pointlessgames.agame.model.LevelData
 import com.pointlessgames.agame.model.Position
@@ -87,6 +88,23 @@ internal class LevelCreatorViewModel : ViewModel() {
                 endingPosition = Position(0, 0),
                 gridTiles = emptyMap(),
                 selectionMode = None,
+            )
+        }
+    }
+
+    fun onGenerateLevelClicked() {
+        val generatedLevelData = Generator.generate(
+            width = uiState.value.width,
+            height = uiState.value.height,
+        ) ?: return
+
+        _uiState.update {
+            it.copy(
+                width = generatedLevelData.width,
+                height = generatedLevelData.height,
+                startingPosition = generatedLevelData.currentPosition,
+                endingPosition = generatedLevelData.endingPosition,
+                gridTiles = generatedLevelData.tiles,
             )
         }
     }

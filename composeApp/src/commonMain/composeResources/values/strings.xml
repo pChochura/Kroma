@@ -5,6 +5,7 @@
     <string name="undo_last_move">Undo last move</string>
     <string name="redo_previous_move">Redo previous move</string>
     <string name="restart_the_level">Restart the level</string>
+    <string name="generate_the_level">Generate the level</string>
     <string name="show_a_hint">Show a hint</string>
     <string name="test_the_level">Test the level</string>
     <string name="decrement">Decrement</string>
