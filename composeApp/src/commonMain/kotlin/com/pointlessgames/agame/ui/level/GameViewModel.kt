@@ -2,8 +2,10 @@ package com.pointlessgames.agame.ui.level
 
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.pointlessgames.agame.Game
 import com.pointlessgames.agame.Solver
+import com.pointlessgames.agame.data.LevelRepository
 import com.pointlessgames.agame.model.Direction
 import com.pointlessgames.agame.model.LevelData
 import com.pointlessgames.agame.model.UndoState
@@ -15,9 +17,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlin.math.atan2
 
-internal class GameViewModel : ViewModel() {
+internal class GameViewModel(
+    private val levelRepository: LevelRepository = LevelRepository(),
+) : ViewModel() {
 
     private val undoManager = UndoManager<UndoState>()
 
@@ -213,6 +218,12 @@ internal class GameViewModel : ViewModel() {
 
     fun onLevelCreatorClicked() {
         eventChannel.trySend(Event.Finished)
+    }
+
+    fun onRemoveLevelClicked() {
+        viewModelScope.launch {
+            levelRepository.removeLevel(loadedState.levelData.id)
+        }
     }
 
     sealed class GameUiState {

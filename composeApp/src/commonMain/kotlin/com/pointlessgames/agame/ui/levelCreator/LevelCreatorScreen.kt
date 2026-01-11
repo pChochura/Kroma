@@ -47,7 +47,9 @@ import game.composeapp.generated.resources.ic_dot
 import game.composeapp.generated.resources.ic_generate
 import game.composeapp.generated.resources.ic_play
 import game.composeapp.generated.resources.ic_restart
+import game.composeapp.generated.resources.ic_save
 import game.composeapp.generated.resources.restart_the_level
+import game.composeapp.generated.resources.save_the_level
 import game.composeapp.generated.resources.start_of_the_level
 import game.composeapp.generated.resources.test_the_level
 import kotlinx.coroutines.launch
@@ -103,6 +105,13 @@ internal fun LevelCreatorScreen(
                 iconRes = Res.drawable.ic_generate,
                 contentDescription = Res.string.generate_the_level,
                 onClick = viewModel::onGenerateLevelClicked,
+                position = Position.BELOW,
+            )
+            IconButton(
+                isEnabled = true,
+                iconRes = Res.drawable.ic_save,
+                contentDescription = Res.string.save_the_level,
+                onClick = viewModel::onSaveLevelClicked,
                 position = Position.BELOW,
             )
             IconButton(

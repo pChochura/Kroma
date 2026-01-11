@@ -1,7 +1,9 @@
 package com.pointlessgames.agame.ui.levelCreator
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.pointlessgames.agame.Generator
+import com.pointlessgames.agame.data.LevelRepository
 import com.pointlessgames.agame.model.GridTile
 import com.pointlessgames.agame.model.GridTile.Companion.MAX_VALUE
 import com.pointlessgames.agame.model.GridTile.Companion.MIN_VALUE
@@ -14,8 +16,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
-internal class LevelCreatorViewModel : ViewModel() {
+internal class LevelCreatorViewModel(
+    private val levelRepository: LevelRepository = LevelRepository(),
+) : ViewModel() {
 
     private val eventChannel = Channel<Event>()
     val events = eventChannel.receiveAsFlow()
@@ -97,6 +102,20 @@ internal class LevelCreatorViewModel : ViewModel() {
                 startingPosition = generatedLevelData.currentPosition,
                 endingPosition = generatedLevelData.endingPosition,
                 gridTiles = generatedLevelData.tiles,
+            )
+        }
+    }
+
+    fun onSaveLevelClicked() {
+        viewModelScope.launch {
+            levelRepository.addLevel(
+                levelData = LevelData(
+                    width = uiState.value.width,
+                    height = uiState.value.height,
+                    currentPosition = uiState.value.startingPosition,
+                    endingPosition = uiState.value.endingPosition,
+                    tiles = uiState.value.gridTiles,
+                )
             )
         }
     }

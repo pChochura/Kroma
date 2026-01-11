@@ -12,9 +12,9 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.pointlessgames.agame.data.LevelRepository
 import com.pointlessgames.agame.ui.components.InlineLoader
 import com.pointlessgames.agame.ui.level.ui.LevelContent
-import com.pointlessgames.agame.utils.levels
 import kotlinx.coroutines.launch
 
 @Composable
@@ -39,7 +39,12 @@ internal fun LevelScreen(
     }
 
     LaunchedEffect(Unit) {
-        viewModel.loadLevels(levels)
+        val levels = LevelRepository().getLevels()
+        if (levels.isEmpty()) {
+            onFinished()
+        } else {
+            viewModel.loadLevels(levels)
+        }
     }
 
     when (val state = uiState) {

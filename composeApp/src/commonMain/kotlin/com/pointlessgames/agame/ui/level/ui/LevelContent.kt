@@ -36,11 +36,13 @@ import game.composeapp.generated.resources.go_to_previous_level
 import game.composeapp.generated.resources.ic_arrow_left
 import game.composeapp.generated.resources.ic_arrow_right
 import game.composeapp.generated.resources.ic_create
+import game.composeapp.generated.resources.ic_delete
 import game.composeapp.generated.resources.ic_hint
 import game.composeapp.generated.resources.ic_redo
 import game.composeapp.generated.resources.ic_restart
 import game.composeapp.generated.resources.ic_undo
 import game.composeapp.generated.resources.redo_previous_move
+import game.composeapp.generated.resources.remove_level
 import game.composeapp.generated.resources.restart_the_level
 import game.composeapp.generated.resources.show_a_hint
 import game.composeapp.generated.resources.undo_last_move
@@ -66,13 +68,25 @@ internal fun LevelContent(
             modifier = Modifier.fillMaxWidth(),
         ) {
             if (showCreateLevelButton) {
-                IconButton(
-                    isEnabled = true,
-                    iconRes = Res.drawable.ic_create,
-                    contentDescription = Res.string.go_to_level_creator,
-                    onClick = viewModel::onLevelCreatorClicked,
-                    position = Position.BELOW,
-                )
+                Box(modifier = Modifier.align(Alignment.CenterStart)) {
+                    IconButton(
+                        isEnabled = true,
+                        iconRes = Res.drawable.ic_create,
+                        contentDescription = Res.string.go_to_level_creator,
+                        onClick = viewModel::onLevelCreatorClicked,
+                        position = Position.BELOW,
+                    )
+                }
+
+                Box(modifier = Modifier.align(Alignment.CenterEnd)) {
+                    IconButton(
+                        isEnabled = true,
+                        iconRes = Res.drawable.ic_delete,
+                        contentDescription = Res.string.remove_level,
+                        onClick = viewModel::onRemoveLevelClicked,
+                        position = Position.BELOW,
+                    )
+                }
             }
 
             Row(
