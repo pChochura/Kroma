@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -96,7 +95,6 @@ internal fun LevelCreatorScreen(
                 isEnabled = true,
                 iconRes = Res.drawable.ic_restart,
                 contentDescription = Res.string.restart_the_level,
-                size = 48.dp,
                 onClick = viewModel::onRestartClicked,
                 position = Position.BELOW,
             )
@@ -104,7 +102,6 @@ internal fun LevelCreatorScreen(
                 isEnabled = true,
                 iconRes = Res.drawable.ic_generate,
                 contentDescription = Res.string.generate_the_level,
-                size = 48.dp,
                 onClick = viewModel::onGenerateLevelClicked,
                 position = Position.BELOW,
             )
@@ -112,7 +109,6 @@ internal fun LevelCreatorScreen(
                 isEnabled = true,
                 iconRes = Res.drawable.ic_play,
                 contentDescription = Res.string.test_the_level,
-                size = 48.dp,
                 onClick = viewModel::onStartClicked,
                 position = Position.BELOW,
             )
