@@ -8,7 +8,6 @@ import com.pointlessgames.agame.model.Direction
 import com.pointlessgames.agame.model.LevelData
 import com.pointlessgames.agame.model.UndoState
 import com.pointlessgames.agame.utils.UndoManager
-import com.pointlessgames.agame.utils.levels
 import com.pointlessgames.agame.utils.toDegrees
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,22 +33,54 @@ internal class GameViewModel : ViewModel() {
 
     private var swipeAngle = 0.0
 
-    init {
-        loadLevel(1, levels[0])
-    }
-
-    fun loadLevel(level: Int, levelData: LevelData) {
+    fun loadLevels(levels: List<LevelData>) {
         Solver.clearCache()
         undoManager.clear()
         _uiState.update {
+            val levelData = levels.first()
             GameUiState.Loaded(
-                isFinished = false,
-
-                level = level,
+                levels = levels,
+                level = 0,
                 levelData = levelData,
 
-                canMovePreviousLevel = level > 1,
-                canMoveNextLevel = level < levels.size,
+                canMovePreviousLevel = false,
+                canMoveNextLevel = levels.size > 1,
+
+                canHint = !Solver.getBestMoveSequence(levelData).isNullOrEmpty(),
+                possibleMoves = Game.getPossibleMoves(levelData),
+            )
+        }
+    }
+
+    private fun loadNextLevel() {
+        Solver.clearCache()
+        undoManager.clear()
+        _uiState.update {
+            val levelData = loadedState.levels[loadedState.level + 1]
+            loadedState.copy(
+                level = loadedState.level + 1,
+                levelData = levelData,
+
+                canMovePreviousLevel = loadedState.level + 1 > 0,
+                canMoveNextLevel = loadedState.level + 1 < loadedState.levels.lastIndex,
+
+                canHint = !Solver.getBestMoveSequence(levelData).isNullOrEmpty(),
+                possibleMoves = Game.getPossibleMoves(levelData),
+            )
+        }
+    }
+
+    private fun loadPreviousLevel() {
+        Solver.clearCache()
+        undoManager.clear()
+        _uiState.update {
+            val levelData = loadedState.levels[loadedState.level - 1]
+            loadedState.copy(
+                level = loadedState.level - 1,
+                levelData = levelData,
+
+                canMovePreviousLevel = loadedState.level - 1 > 0,
+                canMoveNextLevel = loadedState.level - 1 < loadedState.levels.lastIndex,
 
                 canHint = !Solver.getBestMoveSequence(levelData).isNullOrEmpty(),
                 possibleMoves = Game.getPossibleMoves(levelData),
@@ -61,7 +92,6 @@ internal class GameViewModel : ViewModel() {
         _uiState.update {
             loadedState.copy(
                 levelData = levelData,
-                isFinished = Game.isFinished(levelData),
                 possibleMoves = Game.getPossibleMoves(levelData),
                 canUndo = undoManager.canUndo(),
                 canRedo = undoManager.canRedo(),
@@ -101,8 +131,8 @@ internal class GameViewModel : ViewModel() {
     }
 
     fun onAnimationsFinished() {
-        if (loadedState.isFinished) {
-            if (loadedState.level >= levels.lastIndex) {
+        if (Game.isFinished(loadedState.levelData)) {
+            if (!loadedState.canMoveNextLevel) {
                 eventChannel.trySend(Event.Finished)
 
                 return
@@ -172,23 +202,22 @@ internal class GameViewModel : ViewModel() {
     }
 
     fun onPreviousLevelClicked() {
-        loadLevel(
-            level = loadedState.level - 1,
-            levelData = levels[loadedState.level - 2],
-        )
+        loadPreviousLevel()
         _uiState.update { loadedState.copy(animationMovesForward = false) }
     }
 
     fun onNextLevelClicked() {
-        loadLevel(
-            level = loadedState.level + 1,
-            levelData = levels[loadedState.level],
-        )
+        loadNextLevel()
         _uiState.update { loadedState.copy(animationMovesForward = true) }
+    }
+
+    fun onLevelCreatorClicked() {
+        eventChannel.trySend(Event.Finished)
     }
 
     sealed class GameUiState {
         data class Loaded(
+            val levels: List<LevelData>,
             val level: Int,
             val levelData: LevelData,
 
@@ -196,8 +225,6 @@ internal class GameViewModel : ViewModel() {
 
             val canMovePreviousLevel: Boolean = false,
             val canMoveNextLevel: Boolean = false,
-
-            val isFinished: Boolean = false,
 
             val canUndo: Boolean = false,
             val canRedo: Boolean = false,

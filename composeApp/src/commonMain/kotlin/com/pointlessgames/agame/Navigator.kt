@@ -10,6 +10,7 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
+import com.pointlessgames.agame.model.LevelData
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -19,6 +20,9 @@ internal sealed interface Route : NavKey {
     data object Level : Route
 
     @Serializable
+    data class TestLevel(val levelData: LevelData) : Route
+
+    @Serializable
     data object LevelCreator : Route
 }
 
@@ -26,6 +30,7 @@ internal val navigationConfig = SavedStateConfiguration {
     serializersModule = SerializersModule {
         polymorphic(NavKey::class) {
             subclass(Route.Level::class, Route.Level.serializer())
+            subclass(Route.TestLevel::class, Route.TestLevel.serializer())
             subclass(Route.LevelCreator::class, Route.LevelCreator.serializer())
         }
     }

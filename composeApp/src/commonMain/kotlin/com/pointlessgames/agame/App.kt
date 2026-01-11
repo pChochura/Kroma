@@ -9,8 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.navigation3.runtime.rememberNavBackStack
 import com.pointlessgames.agame.ui.level.LevelScreen
+import com.pointlessgames.agame.ui.level.TestLevelScreen
 import com.pointlessgames.agame.ui.levelCreator.LevelCreatorScreen
-import com.pointlessgames.agame.utils.levels
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -39,18 +39,20 @@ fun App() {
                 entry<Route.LevelCreator> {
                     LevelCreatorScreen(
                         innerPadding = innerPadding,
-                        onLevelCreated = {
-                            levels.add(it)
-                            backStack.removeLastOrNull()
-                        },
+                        onLevelCreated = { backStack.add(Route.TestLevel(it)) },
+                    )
+                }
+                entry<Route.TestLevel> {
+                    TestLevelScreen(
+                        innerPadding = innerPadding,
+                        levelData = it.levelData,
+                        onFinished = { backStack.removeLastOrNull() },
                     )
                 }
                 entry<Route.Level> {
                     LevelScreen(
                         innerPadding = innerPadding,
-                        onFinished = {
-                            backStack.add(Route.LevelCreator)
-                        },
+                        onFinished = { backStack.add(Route.LevelCreator) },
                     )
                 }
             }

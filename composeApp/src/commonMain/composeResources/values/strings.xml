@@ -12,4 +12,7 @@
     <string name="increment">Increment</string>
     <string name="go_to_previous_level">Go to the previous level</string>
     <string name="go_to_next_level">Go to the next level</string>
+    <string name="go_to_level_creator">Go to the level creator</string>
+    <string name="start_of_the_level">Start of the level</string>
+    <string name="end_of_the_level">End of the level</string>
 </resources>

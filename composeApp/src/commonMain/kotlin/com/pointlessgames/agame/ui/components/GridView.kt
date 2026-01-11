@@ -10,7 +10,7 @@ import androidx.compose.animation.core.animateOffsetAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
@@ -75,6 +75,7 @@ internal fun GameGrid(
     possibleMoves: Set<Direction>,
     tiles: Map<Position, GridTile>,
     onTileClicked: ((Position) -> Unit)? = null,
+    onTileLongClicked: ((Position) -> Unit)? = null,
     onAnimationsFinished: (() -> Unit)? = null,
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -139,6 +140,7 @@ internal fun GameGrid(
                     gridTile = tiles[position] ?: GridTile.Empty,
                     isEndingPosition = endingPosition == position,
                     onClicked = onTileClicked?.let { { it(position) } },
+                    onLongClicked = onTileLongClicked?.let { { it(position) } },
                 )
             }
         }
@@ -208,6 +210,7 @@ private fun GridTile(
     gridTile: GridTile,
     isEndingPosition: Boolean,
     onClicked: (() -> Unit)?,
+    onLongClicked: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     val gadulka = rememberGadulkaState()
@@ -255,9 +258,10 @@ private fun GridTile(
             }
             .size(size)
             .clip(shape)
-            .clickable(
-                enabled = onClicked != null,
+            .combinedClickable(
+                enabled = onClicked != null || onLongClicked != null,
                 onClick = { onClicked?.invoke() },
+                onLongClick = { onLongClicked?.invoke() },
                 role = Role.Button,
             )
             .drawWithCache {

@@ -10,6 +10,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
@@ -17,6 +18,7 @@ import androidx.compose.material3.TooltipDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.pointlessgames.agame.utils.DefaultSpacing
@@ -34,6 +36,7 @@ internal fun IconButton(
     iconRes: DrawableResource,
     contentDescription: StringResource,
     onClick: () -> Unit,
+    tint: Color = LocalContentColor.current,
     position: Position = Position.ABOVE,
     size: Dp = 32.dp,
 ) {
@@ -65,8 +68,8 @@ internal fun IconButton(
             enabled = isEnabled,
             onClick = onClick,
             colors = IconButtonDefaults.iconButtonColors(
-                contentColor = MaterialTheme.colorScheme.onBackground,
-                disabledContentColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f),
+                contentColor = tint,
+                disabledContentColor = tint.copy(alpha = 0.2f),
             ),
         ) {
             Icon(
