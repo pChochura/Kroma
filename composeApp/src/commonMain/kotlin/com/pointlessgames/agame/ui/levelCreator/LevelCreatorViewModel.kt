@@ -3,11 +3,14 @@ package com.pointlessgames.agame.ui.levelCreator
 import androidx.lifecycle.ViewModel
 import com.pointlessgames.agame.Generator
 import com.pointlessgames.agame.model.GridTile
+import com.pointlessgames.agame.model.GridTile.Companion.MAX_VALUE
+import com.pointlessgames.agame.model.GridTile.Companion.MIN_VALUE
 import com.pointlessgames.agame.model.LevelData
 import com.pointlessgames.agame.model.Position
 import com.pointlessgames.agame.ui.levelCreator.LevelCreatorViewModel.LevelCreatorUiState.SelectionMode.End
 import com.pointlessgames.agame.ui.levelCreator.LevelCreatorViewModel.LevelCreatorUiState.SelectionMode.None
 import com.pointlessgames.agame.ui.levelCreator.LevelCreatorViewModel.LevelCreatorUiState.SelectionMode.Start
+import com.pointlessgames.agame.utils.next
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,16 +31,10 @@ internal class LevelCreatorViewModel : ViewModel() {
         when (uiState.value.selectionMode) {
             None -> {
                 val currentTile = uiState.value.gridTiles[position] ?: GridTile.Empty
-                val nextTile = currentTile.copy(value = currentTile.value + 1)
-                _uiState.update {
-                    it.copy(
-                        gridTiles = if (nextTile.value > 2) {
-                            it.gridTiles - position
-                        } else {
-                            it.gridTiles + (position to nextTile)
-                        },
-                    )
-                }
+                val nextTile = currentTile.copy(
+                    value = currentTile.value.next(MIN_VALUE, MAX_VALUE),
+                )
+                _uiState.update { it.copy(gridTiles = it.gridTiles + (position to nextTile)) }
             }
 
             Start -> _uiState.update { it.copy(startingPosition = position) }

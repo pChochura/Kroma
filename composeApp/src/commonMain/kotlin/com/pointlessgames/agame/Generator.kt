@@ -1,6 +1,7 @@
 package com.pointlessgames.agame
 
 import com.pointlessgames.agame.model.GridTile
+import com.pointlessgames.agame.model.GridTile.Companion.MAX_VALUE
 import com.pointlessgames.agame.model.LevelData
 import com.pointlessgames.agame.model.Position
 import kotlin.random.Random
@@ -8,7 +9,6 @@ import kotlin.random.Random
 internal object Generator {
 
     private val random = Random(Random.nextInt())
-    private const val MAX_VALUE = 3
     private const val MIN_MOVES_COMPLEXITY = 8
 
     fun generate(width: Int, height: Int): LevelData? {
@@ -107,6 +107,10 @@ internal object Generator {
             }
         }
 
+        refinedLevel = refinedLevel.copy(
+            tiles = refinedLevel.tiles.filterValues { it.value != GridTile.Empty.value },
+        )
+
         // --- NEW LOGIC STARTS HERE ---
         val minX = refinedLevel.tiles.keys.minOf { it.x }
         val minY = refinedLevel.tiles.keys.minOf { it.y }
@@ -167,7 +171,7 @@ internal object Generator {
         val allPositions =
             (0 until width).flatMap { x -> (0 until height).map { y -> Position(x, y) } }
 
-        when (random.nextInt(3)) {
+        when (random.nextInt(4)) {
             // 0: Add a new tile to an empty spot
             0 -> {
                 val emptySpots = allPositions - tiles.keys
@@ -186,6 +190,13 @@ internal object Generator {
             2 -> if (tiles.isNotEmpty()) {
                 val pos = tiles.keys.random(random)
                 tiles[pos] = (tiles.getValue(pos) + random.nextInt(1, MAX_VALUE)) % MAX_VALUE
+            }
+            // Insert a wall at a random empty space
+            3 -> {
+                val emptySpots = allPositions - tiles.keys
+                if (emptySpots.isNotEmpty()) {
+                    tiles[emptySpots.random(random)] = GridTile.Wall.value
+                }
             }
         }
         return tiles

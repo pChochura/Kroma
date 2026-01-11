@@ -81,4 +81,18 @@ internal val levels = mutableListOf(
             Position(4, 5) to GridTile(0),
         ),
     ),
+    LevelData(
+        width = 3,
+        height = 3,
+        currentPosition = Position(0, 0),
+        endingPosition = Position(2, 0),
+        tiles = mapOf(
+            Position(0, 0) to GridTile(1),
+            Position(1, 0) to GridTile.Wall,
+            Position(2, 0) to GridTile(2),
+            Position(2, 1) to GridTile(0),
+            Position(0, 2) to GridTile(0),
+            Position(2, 2) to GridTile(2),
+        ),
+    ),
 )

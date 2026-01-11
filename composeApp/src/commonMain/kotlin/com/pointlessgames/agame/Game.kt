@@ -8,6 +8,7 @@ import com.pointlessgames.agame.model.Direction.TOP
 import com.pointlessgames.agame.model.GridTile
 import com.pointlessgames.agame.model.LevelData
 import com.pointlessgames.agame.model.Position
+import com.pointlessgames.agame.utils.isAllowed
 
 internal object Game {
 
@@ -20,28 +21,36 @@ internal object Game {
     ): LevelData = when (moveDirection) {
         LEFT -> performMove(
             levelData = levelData,
-            edgeCondition = { it.x - 1 >= 0 },
+            edgeCondition = {
+                it.x - 1 >= 0 && levelData.tiles[it.copy(x = it.x - 1)].isAllowed
+            },
             transformedPosition = { it.copy(x = it.x - 1) },
             showDirection = moveDirection.opposite,
         )
 
         RIGHT -> performMove(
             levelData = levelData,
-            edgeCondition = { it.x + 1 < levelData.width },
+            edgeCondition = {
+                it.x + 1 < levelData.width && levelData.tiles[it.copy(x = it.x + 1)].isAllowed
+            },
             transformedPosition = { it.copy(x = it.x + 1) },
             showDirection = moveDirection.opposite,
         )
 
         TOP -> performMove(
             levelData = levelData,
-            edgeCondition = { it.y - 1 >= 0 },
+            edgeCondition = {
+                it.y - 1 >= 0 && levelData.tiles[it.copy(y = it.y - 1)].isAllowed
+            },
             transformedPosition = { it.copy(y = it.y - 1) },
             showDirection = moveDirection.opposite,
         )
 
         BOTTOM -> performMove(
             levelData = levelData,
-            edgeCondition = { it.y + 1 < levelData.height },
+            edgeCondition = {
+                it.y + 1 < levelData.height && levelData.tiles[it.copy(y = it.y + 1)].isAllowed
+            },
             transformedPosition = { it.copy(y = it.y + 1) },
             showDirection = moveDirection.opposite,
         )
@@ -98,7 +107,9 @@ internal object Game {
         if (
             calculateCanMove(
                 levelData = levelData,
-                edgeCondition = { it.x - 1 >= 0 },
+                edgeCondition = {
+                    it.x - 1 >= 0 && levelData.tiles[it.copy(x = it.x - 1)].isAllowed
+                },
                 transformedPosition = { it.copy(x = it.x - 1) },
             )
         ) {
@@ -108,7 +119,9 @@ internal object Game {
         if (
             calculateCanMove(
                 levelData = levelData,
-                edgeCondition = { it.x + 1 < levelData.width },
+                edgeCondition = {
+                    it.x + 1 < levelData.width && levelData.tiles[it.copy(x = it.x + 1)].isAllowed
+                },
                 transformedPosition = { it.copy(x = it.x + 1) },
             )
         ) {
@@ -118,7 +131,9 @@ internal object Game {
         if (
             calculateCanMove(
                 levelData = levelData,
-                edgeCondition = { it.y - 1 >= 0 },
+                edgeCondition = {
+                    it.y - 1 >= 0 && levelData.tiles[it.copy(y = it.y - 1)].isAllowed
+                },
                 transformedPosition = { it.copy(y = it.y - 1) },
             )
         ) {
@@ -128,7 +143,9 @@ internal object Game {
         if (
             calculateCanMove(
                 levelData = levelData,
-                edgeCondition = { it.y + 1 < levelData.height },
+                edgeCondition = {
+                    it.y + 1 < levelData.height && levelData.tiles[it.copy(y = it.y + 1)].isAllowed
+                },
                 transformedPosition = { it.copy(y = it.y + 1) },
             )
         ) {
@@ -145,8 +162,14 @@ internal object Game {
         var currentPosition = levelData.currentPosition
         val currentGridTiles = levelData.tiles
 
-        currentGridTiles[transformedPosition(currentPosition)]?.let {
-            return it.value != currentTile.value
+        transformedPosition(currentPosition).let { nextPosition ->
+            val nextTile = currentGridTiles[nextPosition]
+            if (
+                !edgeCondition(nextPosition) &&
+                nextTile != null && nextTile.value != currentTile.value
+            ) {
+                return true
+            }
         }
 
         while (
