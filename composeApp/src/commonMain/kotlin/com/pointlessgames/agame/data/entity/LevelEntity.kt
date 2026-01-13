@@ -1,5 +1,6 @@
 package com.pointlessgames.agame.data.entity
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -13,4 +14,6 @@ data class LevelEntity(
     val endingPositionX: Int,
     val endingPositionY: Int,
     val tiles: String,
+    @ColumnInfo(defaultValue = "0")
+    val isFinished: Boolean,
 )

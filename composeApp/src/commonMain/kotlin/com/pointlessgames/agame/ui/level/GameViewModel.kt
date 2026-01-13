@@ -36,24 +36,32 @@ internal class GameViewModel(
     private val loadedState: GameUiState.Loaded
         get() = uiState.value as GameUiState.Loaded
 
+    private var firstUnfinishedLevelId: Long? = null
     private var swipeAngle = 0.0
 
     fun loadLevels(levels: List<LevelData>) {
-        Solver.clearCache()
-        undoManager.clear()
-        _uiState.update {
-            val levelData = levels.first()
-            GameUiState.Loaded(
-                levels = levels,
-                level = 0,
-                levelData = levelData,
+        viewModelScope.launch {
+            firstUnfinishedLevelId = levelRepository.getFirstUnfinishedLevelId()
+            val firstUnfinishedLevelIndex = levels
+                .indexOfFirst { it.id == firstUnfinishedLevelId }
+                .takeIf { it != -1 } ?: 0
 
-                canMovePreviousLevel = false,
-                canMoveNextLevel = levels.size > 1,
+            val nextLevelData = levels[firstUnfinishedLevelIndex]
+            Solver.clearCache()
+            undoManager.clear()
+            _uiState.update {
+                GameUiState.Loaded(
+                    levels = levels,
+                    level = firstUnfinishedLevelIndex,
+                    levelData = nextLevelData,
 
-                canHint = !Solver.getBestMoveSequence(levelData).isNullOrEmpty(),
-                possibleMoves = Game.getPossibleMoves(levelData),
-            )
+                    canMovePreviousLevel = firstUnfinishedLevelIndex > 0,
+                    canMoveNextLevel = false,
+
+                    canHint = !Solver.getBestMoveSequence(nextLevelData).isNullOrEmpty(),
+                    possibleMoves = Game.getPossibleMoves(nextLevelData),
+                )
+            }
         }
     }
 
@@ -62,12 +70,15 @@ internal class GameViewModel(
         undoManager.clear()
         _uiState.update {
             val levelData = loadedState.levels[loadedState.level + 1]
+            val firstUnfinishedLevelIndex = loadedState.levels.indexOfFirst {
+                it.id == firstUnfinishedLevelId
+            }
             loadedState.copy(
                 level = loadedState.level + 1,
                 levelData = levelData,
 
                 canMovePreviousLevel = loadedState.level + 1 > 0,
-                canMoveNextLevel = loadedState.level + 1 < loadedState.levels.lastIndex,
+                canMoveNextLevel = loadedState.level + 1 < firstUnfinishedLevelIndex,
 
                 canHint = !Solver.getBestMoveSequence(levelData).isNullOrEmpty(),
                 possibleMoves = Game.getPossibleMoves(levelData),
@@ -80,12 +91,15 @@ internal class GameViewModel(
         undoManager.clear()
         _uiState.update {
             val levelData = loadedState.levels[loadedState.level - 1]
+            val firstUnfinishedLevelIndex = loadedState.levels.indexOfFirst {
+                it.id == firstUnfinishedLevelId
+            }
             loadedState.copy(
                 level = loadedState.level - 1,
                 levelData = levelData,
 
                 canMovePreviousLevel = loadedState.level - 1 > 0,
-                canMoveNextLevel = loadedState.level - 1 < loadedState.levels.lastIndex,
+                canMoveNextLevel = loadedState.level - 1 < firstUnfinishedLevelIndex,
 
                 canHint = !Solver.getBestMoveSequence(levelData).isNullOrEmpty(),
                 possibleMoves = Game.getPossibleMoves(levelData),
@@ -137,7 +151,12 @@ internal class GameViewModel(
 
     fun onAnimationsFinished() {
         if (Game.isFinished(loadedState.levelData)) {
-            if (!loadedState.canMoveNextLevel) {
+            firstUnfinishedLevelId = loadedState.levels.getOrNull(loadedState.level + 1)?.id
+            viewModelScope.launch {
+                levelRepository.markLevelAsFinished(loadedState.levelData.id)
+            }
+
+            if (firstUnfinishedLevelId == null) {
                 eventChannel.trySend(Event.Finished)
 
                 return

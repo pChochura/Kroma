@@ -38,4 +38,10 @@ internal class LevelRepository(
     suspend fun removeLevel(id: Long) {
         levelDao.remove(id)
     }
+
+    suspend fun markLevelAsFinished(id: Long) {
+        levelDao.markAsFinished(id)
+    }
+
+    suspend fun getFirstUnfinishedLevelId(): Long = levelDao.getFirstUnfinishedLevelId()
 }

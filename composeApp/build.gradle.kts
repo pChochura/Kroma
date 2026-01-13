@@ -48,6 +48,8 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel.compose)
             implementation(libs.androidx.navigation3.ui)
             implementation(libs.androidx.lifecycle.viewmodelNavigation3)
+            implementation(libs.androidx.datastore)
+            implementation(libs.androidx.datastore.prefs)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.json.serialization)
 

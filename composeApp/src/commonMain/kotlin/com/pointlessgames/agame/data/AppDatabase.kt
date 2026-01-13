@@ -1,5 +1,6 @@
 package com.pointlessgames.agame.data
 
+import androidx.room.AutoMigration
 import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
@@ -11,7 +12,16 @@ import com.pointlessgames.agame.utils.PlatformContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 
-@Database(entities = [LevelEntity::class], version = 1)
+@Database(
+    entities = [LevelEntity::class],
+    version = 2,
+    autoMigrations = [
+        AutoMigration(
+            from = 1,
+            to = 2,
+        ),
+    ],
+)
 @ConstructedBy(AppDatabaseConstructor::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun levelDao(): LevelDao
@@ -26,7 +36,7 @@ expect fun getDatabaseBuilder(context: PlatformContext): RoomDatabase.Builder<Ap
 
 lateinit var StaticDatabase: AppDatabase
 
-fun initializeRoomDatabase(context: PlatformContext) {
+fun initializeAppDatabase(context: PlatformContext) {
     if (!::StaticDatabase.isInitialized) {
         StaticDatabase = getDatabaseBuilder(context)
             .setDriver(BundledSQLiteDriver())

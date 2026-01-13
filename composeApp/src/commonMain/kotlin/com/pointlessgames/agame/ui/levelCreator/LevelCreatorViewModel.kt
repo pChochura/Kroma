@@ -114,7 +114,9 @@ internal class LevelCreatorViewModel(
                     height = uiState.value.height,
                     currentPosition = uiState.value.startingPosition,
                     endingPosition = uiState.value.endingPosition,
-                    tiles = uiState.value.gridTiles,
+                    tiles = uiState.value.gridTiles.filterValues {
+                        it.value != GridTile.Empty.value
+                    },
                 )
             )
         }
