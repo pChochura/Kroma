@@ -2,64 +2,125 @@ package com.pointlessgames.agame
 
 import com.pointlessgames.agame.model.GridTile
 import com.pointlessgames.agame.model.GridTile.Companion.MAX_VALUE
+import com.pointlessgames.agame.model.GridTile.Companion.MIN_VALUE
 import com.pointlessgames.agame.model.LevelData
 import com.pointlessgames.agame.model.Position
+import com.pointlessgames.agame.utils.next
 import kotlin.random.Random
 
 internal object Generator {
 
     private val random = Random(Random.nextInt())
-    private const val MIN_MOVES_COMPLEXITY = 8
 
-    fun generate(width: Int, height: Int): LevelData? {
-        // 1. Initial setup: Create a mostly random board.
-        var bestLevel = createRandomInitialLevel(width, height)
-        var bestScore = Solver.getBestMoveSequence(bestLevel)?.size ?: -1
+    // --- EVOLUTIONARY ALGORITHM PARAMETERS ---
+    private const val POPULATION_SIZE = 50
+    private const val MAX_GENERATIONS = 100
+    private const val MIN_MOVES_COMPLEXITY = 8 // Target fitness (complexity)
+    private const val MUTATION_RATE = 0.4 // 40% chance to mutate a new child
+    private const val ELITISM_COUNT = 2 // Automatically keep the top 2 fittest levels
 
-        // 2. Iteratively try to improve the level.
-        // We'll try a fixed number of times to avoid an infinite loop.
-        repeat(1000) {
-            if (bestScore >= MIN_MOVES_COMPLEXITY) {
-                // We found a good enough level.
-                return pruneUntouchedTiles(bestLevel)
+    fun generate(width: Int, height: Int): LevelData? = runCatching {
+        // 1. INITIALIZATION: Create an initial population of random levels.
+        var population = (1..POPULATION_SIZE).map { createRandomInitialLevel(width, height) }
+
+        repeat(MAX_GENERATIONS) { generation ->
+            // 2. FITNESS EVALUATION: Calculate a fitness score for each level in the population.
+            val scoredPopulation = population.map { level ->
+                val fitness = Solver.getBestMoveSequence(level)?.size ?: 0
+                level to fitness
+            }.sortedByDescending { it.second } // Sort from best (fittest) to worst
+
+            val bestInGeneration = scoredPopulation.first()
+
+            // Check for termination condition: If the best level is complex enough, we're done.
+            if (bestInGeneration.second >= MIN_MOVES_COMPLEXITY) {
+                println("Found suitable level in generation $generation.")
+                return pruneUntouchedTiles(bestInGeneration.first)
             }
 
-            // Create a temporary copy to modify.
-            val currentTiles = bestLevel.tiles.toMutableMap()
-            val currentStartingPosition = bestLevel.currentPosition
-            val currentEndingPosition = bestLevel.endingPosition
+            val nextGeneration = mutableListOf<LevelData>()
 
-            // 3. Make a random modification to the level.
-            val modifiedTiles = modifyTiles(
-                tiles = currentTiles.mapValues { it.value.value }.toMutableMap(),
-                width = width,
-                height = height,
-                startingPosition = currentStartingPosition,
-                endingPosition = currentEndingPosition,
-            )
+            // 3. SELECTION & EVOLUTION
+            // Elitism: Automatically carry over the best individuals to the next generation.
+            nextGeneration.addAll(scoredPopulation.take(ELITISM_COUNT).map { it.first })
 
-            val nextLevel = toLevelData(
-                width = width,
-                height = height,
-                tiles = modifiedTiles,
-                currentPosition = currentStartingPosition,
-                endingPosition = currentEndingPosition,
-            )
+            // Create the rest of the new population through crossover and mutation.
+            while (nextGeneration.size < POPULATION_SIZE) {
+                // Select two parents from the top half of the population (tournament selection).
+                val parent1 = scoredPopulation.take(POPULATION_SIZE / 2).random(random).first
+                val parent2 = scoredPopulation.take(POPULATION_SIZE / 2).random(random).first
 
-            // 4. Evaluate the new level.
-            val newScore = Solver.getBestMoveSequence(nextLevel)?.size ?: -1
+                // 4. CROSSOVER: Create a child by combining the two parents.
+                var child = crossover(parent1, parent2)
 
-            // 5. Decide if the modification was an improvement.
-            // We are looking for a higher score (more moves).
-            if (newScore > bestScore) {
-                bestScore = newScore
-                bestLevel = nextLevel
+                // 5. MUTATION: Apply random modifications to the child based on the mutation rate.
+                if (random.nextFloat() < MUTATION_RATE) {
+                    child = mutate(child)
+                }
+
+                nextGeneration.add(child)
+            }
+            population = nextGeneration
+        }
+
+        // If max generations are reached, return the best level found so far.
+        val bestOverall = population
+            .map { it to (Solver.getBestMoveSequence(it)?.size ?: 0) }
+            .maxByOrNull { it.second }
+
+        return bestOverall?.takeIf { it.second > 0 }?.first?.let { pruneUntouchedTiles(it) }
+    }.getOrNull()
+
+    /**
+     * Creates a new child level by combining tiles from two parent levels.
+     */
+    private fun crossover(parent1: LevelData, parent2: LevelData): LevelData {
+        val childTiles = parent1.tiles.toMutableMap()
+
+        // Take roughly half the tiles from the second parent, overwriting the first's.
+        parent2.tiles.forEach { (pos, tile) ->
+            if (random.nextBoolean()) {
+                childTiles[pos] = tile
             }
         }
 
-        // Return the best level found, even if it doesn't meet the criteria,
-        // or null if no solution was ever found.
-        return if (bestScore > 0) pruneUntouchedTiles(bestLevel) else null
+        // Ensure start and end positions are valid tiles after crossover.
+        val validPositions = childTiles.keys.toList()
+        if (validPositions.isEmpty()) {
+            // Handle the edge case of an empty level after crossover
+            return createRandomInitialLevel(parent1.width, parent1.height)
+        }
+        val startPos = if (parent1.currentPosition in validPositions) parent1.currentPosition else validPositions.random(random)
+        val endPos = if (parent1.endingPosition in validPositions && parent1.endingPosition != startPos) parent1.endingPosition else (validPositions - startPos).randomOrNull() ?: startPos
+
+        return LevelData(
+            width = parent1.width,
+            height = parent1.height,
+            tiles = childTiles,
+            currentPosition = startPos,
+            endingPosition = endPos
+        )
+    }
+
+    /**
+     * Applies a random modification to a level. This is a wrapper for the existing modifyTiles.
+     */
+    private fun mutate(level: LevelData): LevelData {
+        val modifiedTiles = modifyTiles(
+            tiles = level.tiles.mapValues { it.value.value }.toMutableMap(),
+            width = level.width,
+            height = level.height,
+            startingPosition = level.currentPosition,
+            endingPosition = level.endingPosition,
+        )
+
+        return toLevelData(
+            width = level.width,
+            height = level.height,
+            tiles = modifiedTiles,
+            currentPosition = level.currentPosition,
+            endingPosition = level.endingPosition,
+        )
     }
 
     private fun pruneUntouchedTiles(levelData: LevelData): LevelData {
@@ -149,14 +210,15 @@ internal object Generator {
             for (y in 0 until height) {
                 for (x in 0 until width) {
                     if (random.nextFloat() <= 0.6f) {
-                        set(Position(x, y), random.nextInt(0, MAX_VALUE))
+                        set(Position(x, y), random.nextInt(MIN_VALUE, MAX_VALUE))
                     }
                 }
             }
         }
 
-        val startPos = tiles.keys.random(random)
-        val endPos = (tiles.keys - startPos).random(random)
+        val availablePos = tiles.filterValues { it >= 0 }.keys
+        val startPos = availablePos.random(random)
+        val endPos = (availablePos - startPos).random(random)
 
         return toLevelData(width, height, tiles, startPos, endPos)
     }
@@ -189,7 +251,7 @@ internal object Generator {
             // 2: Change the value of an existing tile
             2 -> if (tiles.isNotEmpty()) {
                 val pos = tiles.keys.random(random)
-                tiles[pos] = (tiles.getValue(pos) + random.nextInt(1, MAX_VALUE)) % MAX_VALUE
+                tiles[pos] = tiles.getValue(pos).next(0, MAX_VALUE, random.nextInt(1, MAX_VALUE))
             }
             // Insert a wall at a random empty space
             3 -> {

@@ -165,8 +165,8 @@ internal object Game {
         transformedPosition(currentPosition).let { nextPosition ->
             val nextTile = currentGridTiles[nextPosition]
             if (
-                !edgeCondition(nextPosition) &&
-                nextTile != null && nextTile.value != currentTile.value
+                !edgeCondition(nextPosition) && nextTile != null &&
+                nextTile.isAllowed && nextTile.value != currentTile.value
             ) {
                 return true
             }
@@ -179,7 +179,8 @@ internal object Game {
             currentPosition = transformedPosition(currentPosition)
         }
 
-        return edgeCondition(currentPosition) &&
-                currentGridTiles[transformedPosition(currentPosition)]?.value != currentTile.value
+        val nextTile = currentGridTiles[transformedPosition(currentPosition)]
+        return edgeCondition(currentPosition) && nextTile != null &&
+                nextTile.isAllowed && nextTile.value != currentTile.value
     }
 }
