@@ -5,10 +5,8 @@ import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
-import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.pointlessgames.agame.data.dao.LevelDao
 import com.pointlessgames.agame.data.entity.LevelEntity
-import com.pointlessgames.agame.utils.PlatformContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 
@@ -32,15 +30,8 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
     override fun initialize(): AppDatabase
 }
 
-expect fun getDatabaseBuilder(context: PlatformContext): RoomDatabase.Builder<AppDatabase>
-
-lateinit var StaticDatabase: AppDatabase
-
-fun initializeAppDatabase(context: PlatformContext) {
-    if (!::StaticDatabase.isInitialized) {
-        StaticDatabase = getDatabaseBuilder(context)
-            .setDriver(BundledSQLiteDriver())
-            .setQueryCoroutineContext(Dispatchers.IO)
-            .build()
-    }
-}
+internal fun createDatabase(
+    builder: RoomDatabase.Builder<AppDatabase>,
+): AppDatabase = builder
+    .setQueryCoroutineContext(Dispatchers.IO)
+    .build()

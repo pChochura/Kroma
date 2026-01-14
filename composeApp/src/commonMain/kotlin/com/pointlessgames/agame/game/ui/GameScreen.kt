@@ -1,7 +1,6 @@
-package com.pointlessgames.agame.ui.level
+package com.pointlessgames.agame.game.ui
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -11,19 +10,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.pointlessgames.agame.model.LevelData
+import com.pointlessgames.agame.LocalNavigator
+import com.pointlessgames.agame.game.GameViewModel
+import com.pointlessgames.agame.game.GameViewModel.Event.GameFinished
 import com.pointlessgames.agame.ui.components.InlineLoader
-import com.pointlessgames.agame.ui.level.ui.LevelContent
 import kotlinx.coroutines.launch
 
 @Composable
-internal fun TestLevelScreen(
-    innerPadding: PaddingValues,
-    levelData: LevelData,
-    onFinished: () -> Unit,
-    viewModel: GameViewModel = viewModel { GameViewModel() },
-) {
+internal fun GameScreen(viewModel: GameViewModel) {
+    val navigator = LocalNavigator.current
+
     val coroutineScope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
@@ -31,7 +27,8 @@ internal fun TestLevelScreen(
         coroutineScope.launch {
             viewModel.events.collect {
                 when (it) {
-                    is GameViewModel.Event.Finished -> onFinished()
+                    is GameFinished -> navigator.navigateToFinishedGame()
+                    is GameViewModel.Event.GoToLevelCreator -> navigator.navigateToLevelCreator()
                 }
             }
         }
@@ -39,8 +36,8 @@ internal fun TestLevelScreen(
         onPauseOrDispose { }
     }
 
-    LaunchedEffect(levelData) {
-        viewModel.loadLevels(listOf(levelData))
+    LaunchedEffect(Unit) {
+        viewModel.loadStoredLevels()
     }
 
     when (val state = uiState) {
@@ -51,9 +48,8 @@ internal fun TestLevelScreen(
         )
 
         is GameViewModel.GameUiState.Loaded -> LevelContent(
-            showCreateLevelButton = false,
+            showCreateLevelButton = true,
             uiState = state,
-            innerPadding = innerPadding,
             viewModel = viewModel,
         )
     }

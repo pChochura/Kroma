@@ -1,4 +1,4 @@
-package com.pointlessgames.agame.ui.levelCreator
+package com.pointlessgames.agame.levelCreator
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 internal class LevelCreatorViewModel(
-    private val levelRepository: LevelRepository = LevelRepository(),
+    private val levelRepository: LevelRepository,
 ) : ViewModel() {
 
     private val eventChannel = Channel<Event>()

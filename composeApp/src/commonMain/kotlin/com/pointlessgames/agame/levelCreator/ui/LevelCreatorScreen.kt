@@ -1,4 +1,4 @@
-package com.pointlessgames.agame.ui.levelCreator
+package com.pointlessgames.agame.levelCreator.ui
 
 import androidx.compose.foundation.BasicTooltipBox
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -6,7 +6,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,8 +32,10 @@ import androidx.compose.ui.unit.times
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.pointlessgames.agame.model.LevelData
+import com.pointlessgames.agame.LocalNavigator
+import com.pointlessgames.agame.levelCreator.LevelCreatorViewModel
+import com.pointlessgames.agame.levelCreator.LevelCreatorViewModel.Event.LevelCreated
+import com.pointlessgames.agame.ui.LocalInnerPadding
 import com.pointlessgames.agame.ui.components.Counter
 import com.pointlessgames.agame.ui.components.GameGrid
 import com.pointlessgames.agame.ui.components.IconButton
@@ -57,11 +58,8 @@ import com.pointlessgames.agame.model.Position as GridTilePosition
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-internal fun LevelCreatorScreen(
-    innerPadding: PaddingValues,
-    onLevelCreated: (LevelData) -> Unit,
-    viewModel: LevelCreatorViewModel = viewModel { LevelCreatorViewModel() },
-) {
+internal fun LevelCreatorScreen(viewModel: LevelCreatorViewModel) {
+    val navigator = LocalNavigator.current
     val density = LocalDensity.current
     val spacing = DefaultSpacing.current
     val coroutineScope = rememberCoroutineScope()
@@ -74,7 +72,7 @@ internal fun LevelCreatorScreen(
         coroutineScope.launch {
             viewModel.events.collect {
                 when (it) {
-                    is LevelCreatorViewModel.Event.LevelCreated -> onLevelCreated(it.levelData)
+                    is LevelCreated -> navigator.navigateToTestLevel(it.levelData)
                 }
             }
         }
@@ -85,7 +83,8 @@ internal fun LevelCreatorScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(innerPadding),
+            .background(MaterialTheme.colorScheme.background)
+            .padding(LocalInnerPadding.current),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Row(

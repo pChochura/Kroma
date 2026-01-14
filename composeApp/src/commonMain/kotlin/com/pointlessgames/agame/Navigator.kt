@@ -3,21 +3,22 @@ package com.pointlessgames.agame
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ProvidableCompositionLocal
-import androidx.compose.runtime.compositionLocalOf
-import androidx.navigation3.runtime.EntryProviderScope
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
-import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.pointlessgames.agame.model.LevelData
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
+import org.koin.compose.navigation3.koinEntryProvider
+import org.koin.core.annotation.KoinExperimentalAPI
 
 internal sealed interface Route : NavKey {
     @Serializable
-    data object Level : Route
+    data object Game : Route
 
     @Serializable
     data class TestLevel(val levelData: LevelData) : Route
@@ -26,29 +27,52 @@ internal sealed interface Route : NavKey {
     data object LevelCreator : Route
 }
 
-internal val navigationConfig = SavedStateConfiguration {
+private val navigationConfig = SavedStateConfiguration {
     serializersModule = SerializersModule {
         polymorphic(NavKey::class) {
-            subclass(Route.Level::class, Route.Level.serializer())
+            subclass(Route.Game::class, Route.Game.serializer())
             subclass(Route.TestLevel::class, Route.TestLevel.serializer())
             subclass(Route.LevelCreator::class, Route.LevelCreator.serializer())
         }
     }
 }
 
+@OptIn(KoinExperimentalAPI::class)
 @Composable
 internal fun Navigator(
-    backStack: NavBackStack<NavKey>,
-    content: EntryProviderScope<NavKey>.() -> Unit,
+    startingRoute: Route,
+    backStack: NavBackStack<NavKey> = rememberNavBackStack(
+        configuration = navigationConfig,
+        startingRoute,
+    ),
 ) {
-    CompositionLocalProvider(LocalBackStack provides backStack) {
+    val navigator = Navigator(backStack)
+    CompositionLocalProvider(LocalNavigator provides navigator) {
         NavDisplay(
             backStack = backStack,
-            entryProvider = entryProvider(builder = content),
+            entryProvider = koinEntryProvider(),
         )
     }
 }
 
-internal val LocalBackStack: ProvidableCompositionLocal<NavBackStack<NavKey>> = compositionLocalOf {
-    error("LocalBackStack not initialized")
+internal class Navigator(private val backStack: NavBackStack<NavKey>) {
+    fun navigateToTestLevel(levelData: LevelData) {
+        backStack.add(Route.TestLevel(levelData))
+    }
+
+    fun navigateBackFromTestLevel() {
+        backStack.removeLast()
+    }
+
+    fun navigateToFinishedGame() {
+        backStack.removeLast()
+        backStack.add(Route.LevelCreator)
+    }
+
+    fun navigateToLevelCreator() {
+        backStack.add(Route.LevelCreator)
+    }
 }
+
+internal val LocalNavigator: ProvidableCompositionLocal<Navigator> =
+    staticCompositionLocalOf { error("LocalNavigator not initialized") }

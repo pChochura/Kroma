@@ -1,4 +1,4 @@
-package com.pointlessgames.agame.ui.level.ui
+package com.pointlessgames.agame.game.ui
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
@@ -6,12 +6,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,10 +24,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.DpSize
+import com.pointlessgames.agame.game.GameViewModel
+import com.pointlessgames.agame.ui.LocalInnerPadding
 import com.pointlessgames.agame.ui.components.GameGrid
 import com.pointlessgames.agame.ui.components.IconButton
 import com.pointlessgames.agame.ui.components.Position
-import com.pointlessgames.agame.ui.level.GameViewModel
 import com.pointlessgames.agame.utils.DefaultSpacing
 import game.composeapp.generated.resources.Res
 import game.composeapp.generated.resources.go_to_level_creator
@@ -51,13 +52,13 @@ import game.composeapp.generated.resources.undo_last_move
 internal fun LevelContent(
     showCreateLevelButton: Boolean,
     uiState: GameViewModel.GameUiState.Loaded,
-    innerPadding: PaddingValues,
     viewModel: GameViewModel,
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(innerPadding),
+            .background(MaterialTheme.colorScheme.background)
+            .padding(LocalInnerPadding.current),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(
             space = DefaultSpacing.current.extraLarge,

@@ -1,7 +1,4 @@
-@file:OptIn(ExperimentalWasmDsl::class)
-
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -21,9 +18,10 @@ kotlin {
         iosSimulatorArm64()
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
-            baseName = "Game"
+            baseName = "ComposeApp"
             isStatic = true
             linkerOpts.add("-lsqlite3")
+            freeCompilerArgs += "-Xbinary=bundleId=com.pointlessgames.agame"
         }
     }
 
@@ -55,6 +53,10 @@ kotlin {
 
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.bundled)
+
+            implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
+            implementation(libs.koin.compose.navigation)
 
             implementation(libs.gadulka)
         }

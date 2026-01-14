@@ -6,11 +6,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
-import androidx.navigation3.runtime.rememberNavBackStack
-import com.pointlessgames.agame.ui.level.LevelScreen
-import com.pointlessgames.agame.ui.level.TestLevelScreen
-import com.pointlessgames.agame.ui.levelCreator.LevelCreatorScreen
+import com.pointlessgames.agame.ui.LocalInnerPadding
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -27,34 +25,9 @@ fun App() {
             large = RoundedCornerShape(24f),
         ),
     ) {
-        Scaffold(
-            contentWindowInsets = WindowInsets.safeContent,
-        ) { innerPadding ->
-            val backStack = rememberNavBackStack(
-                configuration = navigationConfig,
-                Route.Level,
-            )
-
-            Navigator(backStack = backStack) {
-                entry<Route.LevelCreator> {
-                    LevelCreatorScreen(
-                        innerPadding = innerPadding,
-                        onLevelCreated = { backStack.add(Route.TestLevel(it)) },
-                    )
-                }
-                entry<Route.TestLevel> {
-                    TestLevelScreen(
-                        innerPadding = innerPadding,
-                        levelData = it.levelData,
-                        onFinished = { backStack.removeLastOrNull() },
-                    )
-                }
-                entry<Route.Level> {
-                    LevelScreen(
-                        innerPadding = innerPadding,
-                        onFinished = { backStack.add(Route.LevelCreator) },
-                    )
-                }
+        Scaffold(contentWindowInsets = WindowInsets.safeContent) { innerPadding ->
+            CompositionLocalProvider(LocalInnerPadding provides innerPadding) {
+                Navigator(Route.Game)
             }
         }
     }

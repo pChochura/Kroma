@@ -1,28 +1,9 @@
 package com.pointlessgames.agame.data
 
 import androidx.room.Room
-import androidx.room.RoomDatabase
-import com.pointlessgames.agame.utils.PlatformContext
-import kotlinx.cinterop.ExperimentalForeignApi
-import platform.Foundation.NSDocumentDirectory
-import platform.Foundation.NSFileManager
-import platform.Foundation.NSUserDomainMask
+import androidx.sqlite.driver.NativeSQLiteDriver
+import com.pointlessgames.agame.utils.documentDirectory
 
-actual fun getDatabaseBuilder(context: PlatformContext): RoomDatabase.Builder<AppDatabase> {
-    val dbFilePath = documentDirectory() + "/my_room.db"
-    return Room.databaseBuilder<AppDatabase>(
-        name = dbFilePath,
-    )
-}
-
-@OptIn(ExperimentalForeignApi::class)
-private fun documentDirectory(): String {
-    val documentDirectory = NSFileManager.defaultManager.URLForDirectory(
-        directory = NSDocumentDirectory,
-        inDomain = NSUserDomainMask,
-        appropriateForURL = null,
-        create = false,
-        error = null,
-    )
-    return requireNotNull(documentDirectory?.path)
-}
+internal fun getDatabaseBuilder() = Room.databaseBuilder<AppDatabase>(
+    name = documentDirectory() + "/my_room.db",
+).setDriver(NativeSQLiteDriver())

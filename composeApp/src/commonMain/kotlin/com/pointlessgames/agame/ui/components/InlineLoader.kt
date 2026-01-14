@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 
-private const val ANIMATION_DURATION = 2000
+private const val ANIMATION_DURATION = 500
 
 @Composable
 internal fun InlineLoader() {

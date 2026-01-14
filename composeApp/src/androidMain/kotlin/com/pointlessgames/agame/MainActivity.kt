@@ -5,9 +5,8 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.pointlessgames.agame.data.appSettingsFileName
-import com.pointlessgames.agame.data.initializeAppDatabase
-import com.pointlessgames.agame.data.initializeAppSettings
+import com.pointlessgames.agame.di.initKoin
+import org.koin.android.ext.koin.androidContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -18,11 +17,8 @@ class MainActivity : ComponentActivity() {
             )
         )
         super.onCreate(savedInstanceState)
-        initializeAppDatabase(applicationContext)
-        initializeAppSettings {
-            applicationContext.filesDir.resolve(appSettingsFileName).absolutePath
-        }
 
+        initKoin { androidContext(applicationContext) }
         setContent { App() }
     }
 }

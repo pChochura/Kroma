@@ -1,4 +1,4 @@
-package com.pointlessgames.agame.ui.level
+package com.pointlessgames.agame.game
 
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.atan2
 
 internal class GameViewModel(
-    private val levelRepository: LevelRepository = LevelRepository(),
+    private val levelRepository: LevelRepository,
 ) : ViewModel() {
 
     private val undoManager = UndoManager<UndoState>()
@@ -38,6 +38,13 @@ internal class GameViewModel(
 
     private var firstUnfinishedLevelId: Long? = null
     private var swipeAngle = 0.0
+
+    fun loadStoredLevels() {
+        viewModelScope.launch {
+            val levels = levelRepository.getLevels()
+            loadLevels(levels)
+        }
+    }
 
     fun loadLevels(levels: List<LevelData>) {
         viewModelScope.launch {
@@ -157,7 +164,7 @@ internal class GameViewModel(
             }
 
             if (firstUnfinishedLevelId == null) {
-                eventChannel.trySend(Event.Finished)
+                eventChannel.trySend(Event.GameFinished)
 
                 return
             }
@@ -236,7 +243,7 @@ internal class GameViewModel(
     }
 
     fun onLevelCreatorClicked() {
-        eventChannel.trySend(Event.Finished)
+        eventChannel.trySend(Event.GoToLevelCreator)
     }
 
     fun onRemoveLevelClicked() {
@@ -270,6 +277,7 @@ internal class GameViewModel(
     }
 
     sealed interface Event {
-        data object Finished : Event
+        data object GoToLevelCreator : Event
+        data object GameFinished : Event
     }
 }

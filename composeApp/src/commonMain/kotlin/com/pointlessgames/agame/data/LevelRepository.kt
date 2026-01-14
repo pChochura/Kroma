@@ -6,7 +6,7 @@ import com.pointlessgames.agame.model.Position
 import kotlinx.serialization.json.Json
 
 internal class LevelRepository(
-    private val levelDao: LevelDao = StaticDatabase.levelDao(),
+    private val levelDao: LevelDao,
 ) {
     private val json = Json {
         allowStructuredMapKeys = true

@@ -61,7 +61,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
-private const val ANIMATION_DURATION = 300
+private const val ANIMATION_DURATION = 150
 private const val ANIMATION_OFFSET_DELAY = 50
 private val EMPTY_CELLS_COLOR = Color(236, 218, 182)
 
