@@ -8,7 +8,7 @@ fun main() = application {
     initKoin()
     Window(
         onCloseRequest = ::exitApplication,
-        title = "A Game",
+        title = "Kroma",
         content = { App() },
     )
 }

@@ -18,6 +18,9 @@ import org.koin.core.annotation.KoinExperimentalAPI
 
 internal sealed interface Route : NavKey {
     @Serializable
+    data object Start : Route
+
+    @Serializable
     data object Game : Route
 
     @Serializable
@@ -30,6 +33,7 @@ internal sealed interface Route : NavKey {
 private val navigationConfig = SavedStateConfiguration {
     serializersModule = SerializersModule {
         polymorphic(NavKey::class) {
+            subclass(Route.Start::class, Route.Start.serializer())
             subclass(Route.Game::class, Route.Game.serializer())
             subclass(Route.TestLevel::class, Route.TestLevel.serializer())
             subclass(Route.LevelCreator::class, Route.LevelCreator.serializer())
@@ -71,6 +75,10 @@ internal class Navigator(private val backStack: NavBackStack<NavKey>) {
 
     fun navigateToLevelCreator() {
         backStack.add(Route.LevelCreator)
+    }
+
+    fun navigateToGame() {
+        backStack.add(Route.Game)
     }
 }
 

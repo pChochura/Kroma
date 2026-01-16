@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">A Game</string>
+    <string name="app_name">Kroma</string>
 
     <!-- Tooltips -->
     <string name="undo_last_move">Undo last move</string>
@@ -14,7 +14,12 @@
     <string name="go_to_previous_level">Go to the previous level</string>
     <string name="go_to_next_level">Go to the next level</string>
     <string name="go_to_level_creator">Go to the level creator</string>
+    <string name="go_to_daily_challenge">Go to the daily challenge</string>
     <string name="start_of_the_level">Start of the level</string>
     <string name="end_of_the_level">End of the level</string>
     <string name="remove_level">Remove the level</string>
+    <string name="start_game">Start the game</string>
+
+    <!-- Content -->
+    <string name="continue_where_you_left_off">Continue where you left off</string>
 </resources>

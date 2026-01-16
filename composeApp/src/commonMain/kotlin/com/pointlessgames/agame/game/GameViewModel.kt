@@ -29,12 +29,12 @@ internal class GameViewModel(
     private val eventChannel = Channel<Event>()
     val events = eventChannel.receiveAsFlow()
 
-    private val _uiState: MutableStateFlow<GameUiState> = MutableStateFlow(GameUiState.Loading)
-    val uiState: StateFlow<GameUiState>
+    private val _uiState: MutableStateFlow<UiState> = MutableStateFlow(UiState.Loading)
+    val uiState: StateFlow<UiState>
         get() = _uiState.asStateFlow()
 
-    private val loadedState: GameUiState.Loaded
-        get() = uiState.value as GameUiState.Loaded
+    private val loadedState: UiState.Loaded
+        get() = uiState.value as UiState.Loaded
 
     private var firstUnfinishedLevelId: Long? = null
     private var swipeAngle = 0.0
@@ -57,7 +57,7 @@ internal class GameViewModel(
             Solver.clearCache()
             undoManager.clear()
             _uiState.update {
-                GameUiState.Loaded(
+                UiState.Loaded(
                     levels = levels,
                     level = firstUnfinishedLevelIndex,
                     levelData = nextLevelData,
@@ -252,7 +252,7 @@ internal class GameViewModel(
         }
     }
 
-    sealed class GameUiState {
+    sealed class UiState {
         data class Loaded(
             val levels: List<LevelData>,
             val level: Int,
@@ -269,11 +269,11 @@ internal class GameViewModel(
             val canHint: Boolean = false,
 
             val possibleMoves: Set<Direction> = emptySet(),
-        ) : GameUiState() {
+        ) : UiState() {
             fun canMove(direction: Direction): Boolean = possibleMoves.contains(direction)
         }
 
-        data object Loading : GameUiState()
+        data object Loading : UiState()
     }
 
     sealed interface Event {

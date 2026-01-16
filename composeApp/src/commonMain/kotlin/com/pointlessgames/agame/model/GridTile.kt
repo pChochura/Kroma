@@ -12,7 +12,7 @@ internal data class GridTile(
     val color: Color
         get() = when (this) {
             Wall -> Color.Transparent
-            Empty -> Color(236, 218, 182)
+            Empty -> colorEmpty
             else -> colors[value % colors.size]
         }
 
@@ -23,10 +23,11 @@ internal data class GridTile(
         const val MIN_VALUE = -2
         const val MAX_VALUE = 3
 
-        private val colors = listOf(
-            Color(218, 180, 157),
-            Color(192, 133, 82),
-            Color(137, 87, 55),
-        )
+        val colorEmpty = Color(236, 218, 182)
+        val colorCell1 = Color(218, 180, 157)
+        val colorCell2 = Color(192, 133, 82)
+        val colorCell3 = Color(137, 87, 55)
+
+        private val colors = listOf(colorCell1, colorCell2, colorCell3)
     }
 }

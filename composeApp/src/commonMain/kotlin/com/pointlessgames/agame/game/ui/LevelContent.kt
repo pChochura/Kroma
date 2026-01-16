@@ -30,28 +30,28 @@ import com.pointlessgames.agame.ui.components.GameGrid
 import com.pointlessgames.agame.ui.components.IconButton
 import com.pointlessgames.agame.ui.components.Position
 import com.pointlessgames.agame.utils.DefaultSpacing
-import game.composeapp.generated.resources.Res
-import game.composeapp.generated.resources.go_to_level_creator
-import game.composeapp.generated.resources.go_to_next_level
-import game.composeapp.generated.resources.go_to_previous_level
-import game.composeapp.generated.resources.ic_arrow_left
-import game.composeapp.generated.resources.ic_arrow_right
-import game.composeapp.generated.resources.ic_create
-import game.composeapp.generated.resources.ic_delete
-import game.composeapp.generated.resources.ic_hint
-import game.composeapp.generated.resources.ic_redo
-import game.composeapp.generated.resources.ic_restart
-import game.composeapp.generated.resources.ic_undo
-import game.composeapp.generated.resources.redo_previous_move
-import game.composeapp.generated.resources.remove_level
-import game.composeapp.generated.resources.restart_the_level
-import game.composeapp.generated.resources.show_a_hint
-import game.composeapp.generated.resources.undo_last_move
+import kroma.composeapp.generated.resources.Res
+import kroma.composeapp.generated.resources.go_to_level_creator
+import kroma.composeapp.generated.resources.go_to_next_level
+import kroma.composeapp.generated.resources.go_to_previous_level
+import kroma.composeapp.generated.resources.icon_arrow_left
+import kroma.composeapp.generated.resources.icon_arrow_right
+import kroma.composeapp.generated.resources.icon_delete
+import kroma.composeapp.generated.resources.icon_lightbulb
+import kroma.composeapp.generated.resources.icon_redo
+import kroma.composeapp.generated.resources.icon_restart
+import kroma.composeapp.generated.resources.icon_undo
+import kroma.composeapp.generated.resources.icon_wrench
+import kroma.composeapp.generated.resources.redo_previous_move
+import kroma.composeapp.generated.resources.remove_level
+import kroma.composeapp.generated.resources.restart_the_level
+import kroma.composeapp.generated.resources.show_a_hint
+import kroma.composeapp.generated.resources.undo_last_move
 
 @Composable
 internal fun LevelContent(
     showCreateLevelButton: Boolean,
-    uiState: GameViewModel.GameUiState.Loaded,
+    uiState: GameViewModel.UiState.Loaded,
     viewModel: GameViewModel,
 ) {
     Column(
@@ -72,7 +72,7 @@ internal fun LevelContent(
                 Box(modifier = Modifier.align(Alignment.CenterStart)) {
                     IconButton(
                         isEnabled = true,
-                        iconRes = Res.drawable.ic_create,
+                        iconRes = Res.drawable.icon_wrench,
                         contentDescription = Res.string.go_to_level_creator,
                         onClick = viewModel::onLevelCreatorClicked,
                         position = Position.BELOW,
@@ -82,7 +82,7 @@ internal fun LevelContent(
                 Box(modifier = Modifier.align(Alignment.CenterEnd)) {
                     IconButton(
                         isEnabled = true,
-                        iconRes = Res.drawable.ic_delete,
+                        iconRes = Res.drawable.icon_delete,
                         contentDescription = Res.string.remove_level,
                         onClick = viewModel::onRemoveLevelClicked,
                         position = Position.BELOW,
@@ -100,7 +100,7 @@ internal fun LevelContent(
             ) {
                 IconButton(
                     isEnabled = uiState.canMovePreviousLevel,
-                    iconRes = Res.drawable.ic_arrow_left,
+                    iconRes = Res.drawable.icon_arrow_left,
                     contentDescription = Res.string.go_to_previous_level,
                     onClick = viewModel::onPreviousLevelClicked,
                     position = Position.BELOW,
@@ -112,7 +112,7 @@ internal fun LevelContent(
                 )
                 IconButton(
                     isEnabled = uiState.canMoveNextLevel,
-                    iconRes = Res.drawable.ic_arrow_right,
+                    iconRes = Res.drawable.icon_arrow_right,
                     contentDescription = Res.string.go_to_next_level,
                     onClick = viewModel::onNextLevelClicked,
                     position = Position.BELOW,
@@ -171,25 +171,25 @@ internal fun LevelContent(
         ) {
             IconButton(
                 isEnabled = uiState.canUndo,
-                iconRes = Res.drawable.ic_undo,
+                iconRes = Res.drawable.icon_undo,
                 contentDescription = Res.string.undo_last_move,
                 onClick = viewModel::onUndoClicked,
             )
             IconButton(
                 isEnabled = uiState.canRedo,
-                iconRes = Res.drawable.ic_redo,
+                iconRes = Res.drawable.icon_redo,
                 contentDescription = Res.string.redo_previous_move,
                 onClick = viewModel::onRedoClicked,
             )
             IconButton(
                 isEnabled = uiState.canRestart,
-                iconRes = Res.drawable.ic_restart,
+                iconRes = Res.drawable.icon_restart,
                 contentDescription = Res.string.restart_the_level,
                 onClick = viewModel::onRestartClicked,
             )
             IconButton(
                 isEnabled = uiState.canHint,
-                iconRes = Res.drawable.ic_hint,
+                iconRes = Res.drawable.icon_lightbulb,
                 contentDescription = Res.string.show_a_hint,
                 onClick = viewModel::onHintClicked,
             )

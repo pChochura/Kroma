@@ -25,8 +25,8 @@ internal class LevelCreatorViewModel(
     private val eventChannel = Channel<Event>()
     val events = eventChannel.receiveAsFlow()
 
-    private val _uiState = MutableStateFlow(LevelCreatorUiState())
-    val uiState: StateFlow<LevelCreatorUiState>
+    private val _uiState = MutableStateFlow(UiState())
+    val uiState: StateFlow<UiState>
         get() = _uiState.asStateFlow()
 
     fun onTileClicked(position: Position) {
@@ -122,7 +122,7 @@ internal class LevelCreatorViewModel(
         }
     }
 
-    data class LevelCreatorUiState(
+    data class UiState(
         val width: Int = 3,
         val height: Int = 3,
         val startingPosition: Position = Position(0, 0),

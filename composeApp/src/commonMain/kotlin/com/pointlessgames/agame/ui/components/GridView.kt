@@ -51,13 +51,13 @@ import com.pointlessgames.agame.model.Position
 import com.pointlessgames.agame.utils.DefaultSpacing
 import com.pointlessgames.agame.utils.filledRoundedRect
 import eu.iamkonstantin.kotlin.gadulka.rememberGadulkaState
-import game.composeapp.generated.resources.Res
-import game.composeapp.generated.resources.ic_arrow_bottom
-import game.composeapp.generated.resources.ic_arrow_left
-import game.composeapp.generated.resources.ic_arrow_right
-import game.composeapp.generated.resources.ic_arrow_top
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kroma.composeapp.generated.resources.Res
+import kroma.composeapp.generated.resources.icon_arrow_bottom_wide
+import kroma.composeapp.generated.resources.icon_arrow_left_wide
+import kroma.composeapp.generated.resources.icon_arrow_right_wide
+import kroma.composeapp.generated.resources.icon_arrow_top_wide
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 
@@ -168,13 +168,13 @@ internal fun GameGrid(
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     if (currentPossibleMoves.contains(LEFT))
-                        Arrow(tileSize * 0.4f, Res.drawable.ic_arrow_left, LEFT)
+                        Arrow(tileSize * 0.4f, Res.drawable.icon_arrow_left_wide, LEFT)
                     if (currentPossibleMoves.contains(RIGHT))
-                        Arrow(tileSize * 0.4f, Res.drawable.ic_arrow_right, RIGHT)
+                        Arrow(tileSize * 0.4f, Res.drawable.icon_arrow_right_wide, RIGHT)
                     if (currentPossibleMoves.contains(TOP))
-                        Arrow(tileSize * 0.4f, Res.drawable.ic_arrow_top, TOP)
+                        Arrow(tileSize * 0.4f, Res.drawable.icon_arrow_top_wide, TOP)
                     if (currentPossibleMoves.contains(BOTTOM))
-                        Arrow(tileSize * 0.4f, Res.drawable.ic_arrow_bottom, BOTTOM)
+                        Arrow(tileSize * 0.4f, Res.drawable.icon_arrow_bottom_wide, BOTTOM)
                 }
             }
         }

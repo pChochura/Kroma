@@ -41,19 +41,19 @@ import com.pointlessgames.agame.ui.components.GameGrid
 import com.pointlessgames.agame.ui.components.IconButton
 import com.pointlessgames.agame.ui.components.Position
 import com.pointlessgames.agame.utils.DefaultSpacing
-import game.composeapp.generated.resources.Res
-import game.composeapp.generated.resources.end_of_the_level
-import game.composeapp.generated.resources.generate_the_level
-import game.composeapp.generated.resources.ic_dot
-import game.composeapp.generated.resources.ic_generate
-import game.composeapp.generated.resources.ic_play
-import game.composeapp.generated.resources.ic_restart
-import game.composeapp.generated.resources.ic_save
-import game.composeapp.generated.resources.restart_the_level
-import game.composeapp.generated.resources.save_the_level
-import game.composeapp.generated.resources.start_of_the_level
-import game.composeapp.generated.resources.test_the_level
 import kotlinx.coroutines.launch
+import kroma.composeapp.generated.resources.Res
+import kroma.composeapp.generated.resources.end_of_the_level
+import kroma.composeapp.generated.resources.generate_the_level
+import kroma.composeapp.generated.resources.icon_dot
+import kroma.composeapp.generated.resources.icon_magic
+import kroma.composeapp.generated.resources.icon_play
+import kroma.composeapp.generated.resources.icon_restart
+import kroma.composeapp.generated.resources.icon_save
+import kroma.composeapp.generated.resources.restart_the_level
+import kroma.composeapp.generated.resources.save_the_level
+import kroma.composeapp.generated.resources.start_of_the_level
+import kroma.composeapp.generated.resources.test_the_level
 import com.pointlessgames.agame.model.Position as GridTilePosition
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -94,28 +94,28 @@ internal fun LevelCreatorScreen(viewModel: LevelCreatorViewModel) {
         ) {
             IconButton(
                 isEnabled = true,
-                iconRes = Res.drawable.ic_restart,
+                iconRes = Res.drawable.icon_restart,
                 contentDescription = Res.string.restart_the_level,
                 onClick = viewModel::onRestartClicked,
                 position = Position.BELOW,
             )
             IconButton(
                 isEnabled = true,
-                iconRes = Res.drawable.ic_generate,
+                iconRes = Res.drawable.icon_magic,
                 contentDescription = Res.string.generate_the_level,
                 onClick = viewModel::onGenerateLevelClicked,
                 position = Position.BELOW,
             )
             IconButton(
                 isEnabled = true,
-                iconRes = Res.drawable.ic_save,
+                iconRes = Res.drawable.icon_save,
                 contentDescription = Res.string.save_the_level,
                 onClick = viewModel::onSaveLevelClicked,
                 position = Position.BELOW,
             )
             IconButton(
                 isEnabled = true,
-                iconRes = Res.drawable.ic_play,
+                iconRes = Res.drawable.icon_play,
                 contentDescription = Res.string.test_the_level,
                 onClick = viewModel::onStartClicked,
                 position = Position.BELOW,
@@ -179,7 +179,7 @@ internal fun LevelCreatorScreen(viewModel: LevelCreatorViewModel) {
                     ) {
                         IconButton(
                             isEnabled = true,
-                            iconRes = Res.drawable.ic_dot,
+                            iconRes = Res.drawable.icon_dot,
                             contentDescription = Res.string.start_of_the_level,
                             tint = Color(236, 218, 182),
                             onClick = {
@@ -189,7 +189,7 @@ internal fun LevelCreatorScreen(viewModel: LevelCreatorViewModel) {
                         )
                         IconButton(
                             isEnabled = true,
-                            iconRes = Res.drawable.ic_dot,
+                            iconRes = Res.drawable.icon_dot,
                             contentDescription = Res.string.end_of_the_level,
                             tint = MaterialTheme.colorScheme.background,
                             onClick = {

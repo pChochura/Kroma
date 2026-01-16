@@ -3,6 +3,7 @@ package com.pointlessgames.agame.di
 import com.pointlessgames.agame.data.di.dataModule
 import com.pointlessgames.agame.game.di.gameModule
 import com.pointlessgames.agame.levelCreator.di.levelCreatorModule
+import com.pointlessgames.agame.start.di.startModule
 import org.koin.core.context.startKoin
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
@@ -11,6 +12,7 @@ internal val appModule = module {
     includes(platformModule)
     includes(dataModule)
 
+    includes(startModule)
     includes(gameModule)
     includes(levelCreatorModule)
 }

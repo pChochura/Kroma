@@ -45,13 +45,13 @@ internal fun TestLevelScreen(
     }
 
     when (val state = uiState) {
-        is GameViewModel.GameUiState.Loading -> Box(
+        is GameViewModel.UiState.Loading -> Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
             content = { InlineLoader() },
         )
 
-        is GameViewModel.GameUiState.Loaded -> LevelContent(
+        is GameViewModel.UiState.Loaded -> LevelContent(
             showCreateLevelButton = false,
             uiState = state,
             viewModel = viewModel,

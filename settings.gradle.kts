@@ -1,4 +1,4 @@
-rootProject.name = "Game"
+rootProject.name = "Kroma"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
