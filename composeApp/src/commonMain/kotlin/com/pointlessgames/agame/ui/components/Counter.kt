@@ -6,7 +6,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import com.pointlessgames.agame.utils.DefaultSpacing
+import com.pointlessgames.agame.ui.theme.DefaultSpacing
 import kroma.composeapp.generated.resources.Res
 import kroma.composeapp.generated.resources.decrement
 import kroma.composeapp.generated.resources.icon_add

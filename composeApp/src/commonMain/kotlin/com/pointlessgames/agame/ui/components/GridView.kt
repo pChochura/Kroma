@@ -13,7 +13,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -48,7 +47,7 @@ import com.pointlessgames.agame.model.Direction.RIGHT
 import com.pointlessgames.agame.model.Direction.TOP
 import com.pointlessgames.agame.model.GridTile
 import com.pointlessgames.agame.model.Position
-import com.pointlessgames.agame.utils.DefaultSpacing
+import com.pointlessgames.agame.ui.theme.DefaultSpacing
 import com.pointlessgames.agame.utils.filledRoundedRect
 import eu.iamkonstantin.kotlin.gadulka.rememberGadulkaState
 import kotlinx.coroutines.delay
@@ -78,7 +77,6 @@ internal fun GameGrid(
     onTileLongClicked: ((Position) -> Unit)? = null,
     onAnimationsFinished: (() -> Unit)? = null,
 ) {
-    val coroutineScope = rememberCoroutineScope()
     val density = LocalDensity.current
 
     val tileGap = DefaultSpacing.current.extraSmall
@@ -86,40 +84,28 @@ internal fun GameGrid(
     val tileSizeByHeight = (maxSize.height - (height - 1) * tileGap) / height
     val tileSize = minOf(tileSizeByWidth, tileSizeByHeight)
 
-    var isAnimationRunning by remember { mutableStateOf(false) }
-    var currentPossibleMoves by remember(Unit) { mutableStateOf(possibleMoves) }
+    var displayedPossibleMoves by remember(Unit) { mutableStateOf(possibleMoves) }
+    var displayedPosition by remember(Unit) { mutableStateOf(currentPosition) }
+
     val playerColor = Animatable(EMPTY_CELLS_COLOR)
-    val animatedCurrentPosition by animateOffsetAsState(
-        Offset(
-            x = with(density) { (currentPosition.x * (tileSize + tileGap)).toPx() },
-            y = with(density) { (currentPosition.y * (tileSize + tileGap)).toPx() },
-        ),
-        tween(ANIMATION_DURATION, delayMillis = ANIMATION_DURATION),
-    ) {
-        coroutineScope.launch {
-            playerColor.animateTo(
-                EMPTY_CELLS_COLOR.copy(alpha = if (possibleMoves.isNotEmpty()) 1f else 0f),
-                tween(ANIMATION_DURATION),
-            )
-            currentPossibleMoves = possibleMoves
-            isAnimationRunning = false
+    val currentOffset = Offset(
+        x = with(density) { (currentPosition.x * (tileSize + tileGap)).toPx() },
+        y = with(density) { (currentPosition.y * (tileSize + tileGap)).toPx() },
+    )
+    val animatedCurrentOffset by animateOffsetAsState(
+        targetValue = currentOffset,
+        animationSpec = tween(ANIMATION_DURATION, delayMillis = ANIMATION_DURATION),
+        finishedListener = {
+            displayedPossibleMoves = possibleMoves
+            displayedPosition = currentPosition
             onAnimationsFinished?.invoke()
+        },
+    )
+
+    LaunchedEffect(possibleMoves) {
+        if (currentOffset == animatedCurrentOffset) {
+            displayedPossibleMoves = possibleMoves
         }
-    }
-
-    LaunchedEffect(currentPosition) {
-        isAnimationRunning = true
-    }
-
-    LaunchedEffect(tiles) {
-        if (!isAnimationRunning) {
-            currentPossibleMoves = possibleMoves
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        currentPossibleMoves = possibleMoves
-        isAnimationRunning = false
     }
 
     Box(
@@ -148,8 +134,8 @@ internal fun GameGrid(
         Box(
             modifier = Modifier
                 .graphicsLayer {
-                    translationX = animatedCurrentPosition.x
-                    translationY = animatedCurrentPosition.y
+                    translationX = animatedCurrentOffset.x
+                    translationY = animatedCurrentOffset.y
                 }
                 .size(tileSize)
                 .drawWithContent {
@@ -159,23 +145,29 @@ internal fun GameGrid(
                     )
                     drawContent()
                 },
+        )
+
+        AnimatedVisibility(
+            visible = animatedCurrentOffset == currentOffset,
+            enter = fadeIn(tween(ANIMATION_DURATION)),
+            exit = fadeOut(tween(ANIMATION_DURATION)),
         ) {
-            AnimatedVisibility(
-                modifier = Modifier.fillMaxSize(),
-                visible = !isAnimationRunning,
-                enter = fadeIn(),
-                exit = fadeOut(),
+            Box(
+                modifier = Modifier
+                    .graphicsLayer {
+                        translationX = (displayedPosition.x * (tileSize + tileGap)).toPx()
+                        translationY = (displayedPosition.y * (tileSize + tileGap)).toPx()
+                    }
+                    .size(tileSize),
             ) {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    if (currentPossibleMoves.contains(LEFT))
-                        Arrow(tileSize * 0.4f, Res.drawable.icon_arrow_left_wide, LEFT)
-                    if (currentPossibleMoves.contains(RIGHT))
-                        Arrow(tileSize * 0.4f, Res.drawable.icon_arrow_right_wide, RIGHT)
-                    if (currentPossibleMoves.contains(TOP))
-                        Arrow(tileSize * 0.4f, Res.drawable.icon_arrow_top_wide, TOP)
-                    if (currentPossibleMoves.contains(BOTTOM))
-                        Arrow(tileSize * 0.4f, Res.drawable.icon_arrow_bottom_wide, BOTTOM)
-                }
+                if (displayedPossibleMoves.contains(LEFT))
+                    Arrow(tileSize * 0.3f, Res.drawable.icon_arrow_left_wide, LEFT)
+                if (displayedPossibleMoves.contains(RIGHT))
+                    Arrow(tileSize * 0.3f, Res.drawable.icon_arrow_right_wide, RIGHT)
+                if (displayedPossibleMoves.contains(TOP))
+                    Arrow(tileSize * 0.3f, Res.drawable.icon_arrow_top_wide, TOP)
+                if (displayedPossibleMoves.contains(BOTTOM))
+                    Arrow(tileSize * 0.3f, Res.drawable.icon_arrow_bottom_wide, BOTTOM)
             }
         }
     }
@@ -248,7 +240,7 @@ private fun GridTile(
         }
     }
 
-    val shape = MaterialTheme.shapes.medium
+    val shape = MaterialTheme.shapes.small
     Box(
         modifier = modifier
             .graphicsLayer {

@@ -1,7 +1,6 @@
 package com.pointlessgames.agame.start.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -9,31 +8,23 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.geometry.CornerRadius
-import androidx.compose.ui.graphics.drawscope.withTransform
-import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.pointlessgames.agame.LocalNavigator
 import com.pointlessgames.agame.model.GridTile
 import com.pointlessgames.agame.ui.LocalInnerPadding
-import com.pointlessgames.agame.ui.components.Position
-import com.pointlessgames.agame.ui.components.Tooltip
-import com.pointlessgames.agame.utils.DefaultSpacing
+import com.pointlessgames.agame.ui.TiltedRoundedCornersShape
+import com.pointlessgames.agame.ui.components.ShapeButton
+import com.pointlessgames.agame.ui.theme.DefaultCornerRadius
+import com.pointlessgames.agame.ui.theme.DefaultIconsSize
+import com.pointlessgames.agame.ui.theme.DefaultSpacing
 import kroma.composeapp.generated.resources.Res
 import kroma.composeapp.generated.resources.continue_where_you_left_off
 import kroma.composeapp.generated.resources.go_to_daily_challenge
@@ -42,13 +33,14 @@ import kroma.composeapp.generated.resources.icon_calendar
 import kroma.composeapp.generated.resources.icon_play
 import kroma.composeapp.generated.resources.icon_wrench
 import kroma.composeapp.generated.resources.start_game
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun StartScreen() {
     val navigator = LocalNavigator.current
     val spacing = DefaultSpacing.current
+    val iconsSizes = DefaultIconsSize.current
+    val cornerRadius = DefaultCornerRadius.current
 
     Box(
         modifier = Modifier
@@ -65,33 +57,25 @@ internal fun StartScreen() {
             verticalArrangement = Arrangement.spacedBy(spacing.large),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Tooltip(
-                position = Position.ABOVE,
+            ShapeButton(
+                size = iconsSizes.extraLarge,
+                iconSize = iconsSizes.medium,
+                icon = Res.drawable.icon_play,
                 contentDescription = Res.string.start_game,
-            ) {
-                IconButton(
-                    modifier = Modifier
-                        .width(128.dp)
-                        .height(64.dp),
-                    onClick = { navigator.navigateToGame() },
-                    colors = IconButtonDefaults.iconButtonColors(
-                        contentColor = GridTile.colorEmpty,
-                        containerColor = GridTile.colorCell2,
-                    ),
-                    shape = MaterialTheme.shapes.medium,
-                ) {
-                    Icon(
-                        modifier = Modifier.size(32.dp),
-                        painter = painterResource(Res.drawable.icon_play),
-                        contentDescription = stringResource(Res.string.start_game),
-                    )
-                }
-            }
+                defaultShape = TiltedRoundedCornersShape(0f, cornerRadius.medium),
+                pressedShape = TiltedRoundedCornersShape(0f, cornerRadius.full),
+                defaultBackgroundColor = MaterialTheme.colorScheme.primary,
+                pressedBackgroundColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                onClick = navigator::navigateToGame,
+            )
 
             Text(
+                modifier = Modifier.fillMaxWidth(0.5f),
                 text = stringResource(Res.string.continue_where_you_left_off),
                 style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center,
             )
         }
 
@@ -103,63 +87,31 @@ internal fun StartScreen() {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .drawWithCache {
-                        val cornerRadius = CornerRadius(16f, 16f)
-                        onDrawBehind {
-                            withTransform(transformBlock = { rotate(45f) }) {
-                                drawRoundRect(
-                                    color = GridTile.colorCell2.copy(alpha = 0.5f),
-                                    cornerRadius = cornerRadius,
-                                )
-                            }
-                        }
-                    }
-                    .clipToBounds()
-                    .clickable(
-                        onClick = { navigator.navigateToLevelCreator() },
-                        role = Role.Button,
-                    ),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    modifier = Modifier.size(24.dp),
-                    painter = painterResource(Res.drawable.icon_wrench),
-                    contentDescription = stringResource(Res.string.go_to_level_creator),
-                    tint = GridTile.colorCell3,
-                )
-            }
+            ShapeButton(
+                size = iconsSizes.large,
+                iconSize = iconsSizes.small,
+                icon = Res.drawable.icon_wrench,
+                contentDescription = Res.string.go_to_level_creator,
+                defaultShape = TiltedRoundedCornersShape(45f, cornerRadius.medium),
+                pressedShape = TiltedRoundedCornersShape(0f, cornerRadius.medium),
+                defaultBackgroundColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f),
+                pressedBackgroundColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary,
+                onClick = navigator::navigateToLevelCreator,
+            )
 
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .drawWithCache {
-                        val cornerRadius = CornerRadius(16f, 16f)
-                        onDrawBehind {
-                            withTransform(transformBlock = { rotate(45f) }) {
-                                drawRoundRect(
-                                    color = GridTile.colorEmpty.copy(alpha = 0.5f),
-                                    cornerRadius = cornerRadius,
-                                )
-                            }
-                        }
-                    }
-                    .clipToBounds()
-                    .clickable(
-                        onClick = { },
-                        role = Role.Button,
-                    ),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    modifier = Modifier.size(24.dp),
-                    painter = painterResource(Res.drawable.icon_calendar),
-                    contentDescription = stringResource(Res.string.go_to_daily_challenge),
-                    tint = GridTile.colorCell3,
-                )
-            }
+            ShapeButton(
+                size = iconsSizes.large,
+                iconSize = iconsSizes.small,
+                icon = Res.drawable.icon_calendar,
+                contentDescription = Res.string.go_to_daily_challenge,
+                defaultShape = TiltedRoundedCornersShape(-45f, cornerRadius.medium),
+                pressedShape = TiltedRoundedCornersShape(0f, cornerRadius.medium),
+                defaultBackgroundColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                pressedBackgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                onClick = navigator::navigateToLevelCreator,
+            )
         }
     }
 }
@@ -191,13 +143,14 @@ private fun Logo() {
                     .aspectRatio(1f)
                     .background(
                         color = colors.first,
-                        shape = MaterialTheme.shapes.medium,
+                        shape = MaterialTheme.shapes.small,
                     ),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = letter,
-                    style = MaterialTheme.typography.displayMedium,
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
                     color = colors.second,
                     textAlign = TextAlign.Center,
                 )

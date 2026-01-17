@@ -1,6 +1,7 @@
 package com.pointlessgames.agame.game.ui
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
@@ -26,34 +27,37 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.DpSize
 import com.pointlessgames.agame.game.GameViewModel
 import com.pointlessgames.agame.ui.LocalInnerPadding
+import com.pointlessgames.agame.ui.TiltedRoundedCornersShape
 import com.pointlessgames.agame.ui.components.GameGrid
 import com.pointlessgames.agame.ui.components.IconButton
 import com.pointlessgames.agame.ui.components.Position
-import com.pointlessgames.agame.utils.DefaultSpacing
+import com.pointlessgames.agame.ui.components.ShapeButton
+import com.pointlessgames.agame.ui.theme.DefaultCornerRadius
+import com.pointlessgames.agame.ui.theme.DefaultIconsSize
+import com.pointlessgames.agame.ui.theme.DefaultSpacing
 import kroma.composeapp.generated.resources.Res
-import kroma.composeapp.generated.resources.go_to_level_creator
+import kroma.composeapp.generated.resources.go_back
 import kroma.composeapp.generated.resources.go_to_next_level
 import kroma.composeapp.generated.resources.go_to_previous_level
 import kroma.composeapp.generated.resources.icon_arrow_left
 import kroma.composeapp.generated.resources.icon_arrow_right
-import kroma.composeapp.generated.resources.icon_delete
 import kroma.composeapp.generated.resources.icon_lightbulb
 import kroma.composeapp.generated.resources.icon_redo
 import kroma.composeapp.generated.resources.icon_restart
 import kroma.composeapp.generated.resources.icon_undo
-import kroma.composeapp.generated.resources.icon_wrench
 import kroma.composeapp.generated.resources.redo_previous_move
-import kroma.composeapp.generated.resources.remove_level
 import kroma.composeapp.generated.resources.restart_the_level
 import kroma.composeapp.generated.resources.show_a_hint
 import kroma.composeapp.generated.resources.undo_last_move
 
 @Composable
 internal fun LevelContent(
-    showCreateLevelButton: Boolean,
     uiState: GameViewModel.UiState.Loaded,
     viewModel: GameViewModel,
 ) {
+    val spacing = DefaultSpacing.current
+    val cornerRadius = DefaultCornerRadius.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -61,40 +65,32 @@ internal fun LevelContent(
             .padding(LocalInnerPadding.current),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(
-            space = DefaultSpacing.current.extraLarge,
+            space = spacing.extraLarge,
             alignment = Alignment.CenterVertically,
         ),
     ) {
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            if (showCreateLevelButton) {
-                Box(modifier = Modifier.align(Alignment.CenterStart)) {
-                    IconButton(
-                        isEnabled = true,
-                        iconRes = Res.drawable.icon_wrench,
-                        contentDescription = Res.string.go_to_level_creator,
-                        onClick = viewModel::onLevelCreatorClicked,
-                        position = Position.BELOW,
-                    )
-                }
-
-                Box(modifier = Modifier.align(Alignment.CenterEnd)) {
-                    IconButton(
-                        isEnabled = true,
-                        iconRes = Res.drawable.icon_delete,
-                        contentDescription = Res.string.remove_level,
-                        onClick = viewModel::onRemoveLevelClicked,
-                        position = Position.BELOW,
-                    )
-                }
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Box(modifier = Modifier.align(Alignment.CenterStart)) {
+                ShapeButton(
+                    size = DefaultIconsSize.current.large,
+                    iconSize = DefaultIconsSize.current.small,
+                    icon = Res.drawable.icon_arrow_left,
+                    contentDescription = Res.string.go_back,
+                    defaultShape = TiltedRoundedCornersShape(45f, cornerRadius.medium),
+                    pressedShape = TiltedRoundedCornersShape(0f, cornerRadius.medium),
+                    defaultBackgroundColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    pressedBackgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tooltipPosition = Position.BELOW,
+                    onClick = viewModel::onBackClicked,
+                )
             }
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(
-                    space = DefaultSpacing.current.medium,
+                    space = spacing.medium,
                     alignment = Alignment.CenterHorizontally,
                 ),
             ) {
@@ -104,18 +100,31 @@ internal fun LevelContent(
                     contentDescription = Res.string.go_to_previous_level,
                     onClick = viewModel::onPreviousLevelClicked,
                     position = Position.BELOW,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Text(
-                    text = "${uiState.level + 1}",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onBackground,
-                )
+                AnimatedContent(
+                    targetState = uiState.level + 1,
+                    transitionSpec = {
+                        val direction = if (initialState < targetState) 1 else -1
+
+                        fadeIn() + slideInHorizontally { direction * it / 2 } togetherWith
+                                fadeOut() + slideOutHorizontally { -direction * it / 2 } using
+                                SizeTransform(false)
+                    },
+                ) {
+                    Text(
+                        text = "$it",
+                        style = MaterialTheme.typography.headlineLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
                 IconButton(
                     isEnabled = uiState.canMoveNextLevel,
                     iconRes = Res.drawable.icon_arrow_right,
                     contentDescription = Res.string.go_to_next_level,
                     onClick = viewModel::onNextLevelClicked,
                     position = Position.BELOW,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         }
@@ -165,7 +174,7 @@ internal fun LevelContent(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(
-                space = DefaultSpacing.current.medium,
+                space = spacing.medium,
                 alignment = Alignment.CenterHorizontally,
             ),
         ) {

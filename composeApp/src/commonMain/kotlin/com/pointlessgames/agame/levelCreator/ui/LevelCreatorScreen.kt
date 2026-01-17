@@ -40,7 +40,7 @@ import com.pointlessgames.agame.ui.components.Counter
 import com.pointlessgames.agame.ui.components.GameGrid
 import com.pointlessgames.agame.ui.components.IconButton
 import com.pointlessgames.agame.ui.components.Position
-import com.pointlessgames.agame.utils.DefaultSpacing
+import com.pointlessgames.agame.ui.theme.DefaultSpacing
 import kotlinx.coroutines.launch
 import kroma.composeapp.generated.resources.Res
 import kroma.composeapp.generated.resources.end_of_the_level

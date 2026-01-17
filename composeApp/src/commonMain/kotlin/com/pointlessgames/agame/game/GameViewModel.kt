@@ -11,6 +11,7 @@ import com.pointlessgames.agame.model.LevelData
 import com.pointlessgames.agame.model.UndoState
 import com.pointlessgames.agame.utils.UndoManager
 import com.pointlessgames.agame.utils.toDegrees
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,15 +40,19 @@ internal class GameViewModel(
     private var firstUnfinishedLevelId: Long? = null
     private var swipeAngle = 0.0
 
+    private var currentAsyncJob: Job? = null
+
     fun loadStoredLevels() {
-        viewModelScope.launch {
+        currentAsyncJob?.cancel()
+        currentAsyncJob = viewModelScope.launch {
             val levels = levelRepository.getLevels()
             loadLevels(levels)
         }
     }
 
     fun loadLevels(levels: List<LevelData>) {
-        viewModelScope.launch {
+        currentAsyncJob?.cancel()
+        currentAsyncJob = viewModelScope.launch {
             firstUnfinishedLevelId = levelRepository.getFirstUnfinishedLevelId()
             val firstUnfinishedLevelIndex = levels
                 .indexOfFirst { it.id == firstUnfinishedLevelId }
@@ -73,13 +78,14 @@ internal class GameViewModel(
     }
 
     private fun loadNextLevel() {
+        val levelData = loadedState.levels[loadedState.level + 1]
+        val firstUnfinishedLevelIndex = loadedState.levels.indexOfFirst {
+            it.id == firstUnfinishedLevelId
+        }
+
         Solver.clearCache()
         undoManager.clear()
         _uiState.update {
-            val levelData = loadedState.levels[loadedState.level + 1]
-            val firstUnfinishedLevelIndex = loadedState.levels.indexOfFirst {
-                it.id == firstUnfinishedLevelId
-            }
             loadedState.copy(
                 level = loadedState.level + 1,
                 levelData = levelData,
@@ -91,16 +97,19 @@ internal class GameViewModel(
                 possibleMoves = Game.getPossibleMoves(levelData),
             )
         }
+
+        updateState(levelData)
     }
 
     private fun loadPreviousLevel() {
+        val levelData = loadedState.levels[loadedState.level - 1]
+        val firstUnfinishedLevelIndex = loadedState.levels.indexOfFirst {
+            it.id == firstUnfinishedLevelId
+        }
+
         Solver.clearCache()
         undoManager.clear()
         _uiState.update {
-            val levelData = loadedState.levels[loadedState.level - 1]
-            val firstUnfinishedLevelIndex = loadedState.levels.indexOfFirst {
-                it.id == firstUnfinishedLevelId
-            }
             loadedState.copy(
                 level = loadedState.level - 1,
                 levelData = levelData,
@@ -108,10 +117,11 @@ internal class GameViewModel(
                 canMovePreviousLevel = loadedState.level - 1 > 0,
                 canMoveNextLevel = loadedState.level - 1 < firstUnfinishedLevelIndex,
 
-                canHint = !Solver.getBestMoveSequence(levelData).isNullOrEmpty(),
                 possibleMoves = Game.getPossibleMoves(levelData),
             )
         }
+
+        updateState(levelData)
     }
 
     private fun updateState(levelData: LevelData) {
@@ -122,8 +132,16 @@ internal class GameViewModel(
                 canUndo = undoManager.canUndo(),
                 canRedo = undoManager.canRedo(),
                 canRestart = undoManager.canUndo(),
-                canHint = !Solver.getBestMoveSequence(levelData).isNullOrEmpty(),
             )
+        }
+
+        currentAsyncJob?.cancel()
+        currentAsyncJob = viewModelScope.launch {
+            _uiState.update {
+                loadedState.copy(
+                    canHint = !Solver.getBestMoveSequence(levelData).isNullOrEmpty(),
+                )
+            }
         }
     }
 
@@ -242,14 +260,8 @@ internal class GameViewModel(
         _uiState.update { loadedState.copy(animationMovesForward = true) }
     }
 
-    fun onLevelCreatorClicked() {
-        eventChannel.trySend(Event.GoToLevelCreator)
-    }
-
-    fun onRemoveLevelClicked() {
-        viewModelScope.launch {
-            levelRepository.removeLevel(loadedState.levelData.id)
-        }
+    fun onBackClicked() {
+        eventChannel.trySend(Event.GoBack)
     }
 
     sealed class UiState {
@@ -277,7 +289,7 @@ internal class GameViewModel(
     }
 
     sealed interface Event {
-        data object GoToLevelCreator : Event
         data object GameFinished : Event
+        data object GoBack : Event
     }
 }

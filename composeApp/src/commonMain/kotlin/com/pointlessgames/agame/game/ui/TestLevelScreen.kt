@@ -13,6 +13,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pointlessgames.agame.LocalNavigator
 import com.pointlessgames.agame.game.GameViewModel
 import com.pointlessgames.agame.game.GameViewModel.Event.GameFinished
+import com.pointlessgames.agame.game.GameViewModel.Event.GoBack
 import com.pointlessgames.agame.model.LevelData
 import com.pointlessgames.agame.ui.components.InlineLoader
 import kotlinx.coroutines.launch
@@ -32,7 +33,7 @@ internal fun TestLevelScreen(
             viewModel.events.collect {
                 when (it) {
                     is GameFinished -> navigator.navigateBackFromTestLevel()
-                    is GameViewModel.Event.GoToLevelCreator -> navigator.navigateToLevelCreator()
+                    is GoBack -> navigator.navigateBack()
                 }
             }
         }
@@ -52,7 +53,6 @@ internal fun TestLevelScreen(
         )
 
         is GameViewModel.UiState.Loaded -> LevelContent(
-            showCreateLevelButton = false,
             uiState = state,
             viewModel = viewModel,
         )

@@ -13,7 +13,7 @@ import androidx.compose.material3.TooltipDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import com.pointlessgames.agame.utils.DefaultSpacing
+import com.pointlessgames.agame.ui.theme.DefaultSpacing
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -49,6 +49,6 @@ internal fun Tooltip(
         },
         state = rememberBasicTooltipState(isPersistent = false),
         focusable = false,
-        content = content
+        content = content,
     )
 }

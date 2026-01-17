@@ -1,4 +1,4 @@
-package com.pointlessgames.agame.utils
+package com.pointlessgames.agame.ui.theme
 
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.Dp
