@@ -1,5 +1,9 @@
 package com.pointlessgames.agame
 
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ProvidableCompositionLocal
@@ -41,6 +45,8 @@ private val navigationConfig = SavedStateConfiguration {
     }
 }
 
+private const val DEFAULT_TRANSITION_DURATION_MILLISECOND = 500
+
 @OptIn(KoinExperimentalAPI::class)
 @Composable
 internal fun Navigator(
@@ -55,6 +61,24 @@ internal fun Navigator(
         NavDisplay(
             backStack = backStack,
             entryProvider = koinEntryProvider(),
+            transitionSpec = {
+                ContentTransform(
+                    fadeIn(animationSpec = tween(DEFAULT_TRANSITION_DURATION_MILLISECOND)),
+                    fadeOut(animationSpec = tween(DEFAULT_TRANSITION_DURATION_MILLISECOND)),
+                )
+            },
+            popTransitionSpec = {
+                ContentTransform(
+                    fadeIn(animationSpec = tween(DEFAULT_TRANSITION_DURATION_MILLISECOND)),
+                    fadeOut(animationSpec = tween(DEFAULT_TRANSITION_DURATION_MILLISECOND)),
+                )
+            },
+            predictivePopTransitionSpec = {
+                ContentTransform(
+                    fadeIn(animationSpec = tween(DEFAULT_TRANSITION_DURATION_MILLISECOND)),
+                    fadeOut(animationSpec = tween(DEFAULT_TRANSITION_DURATION_MILLISECOND)),
+                )
+            },
         )
     }
 }
