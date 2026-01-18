@@ -168,40 +168,8 @@ internal object Generator {
             }
         }
 
-        refinedLevel = refinedLevel.copy(
+        return refinedLevel.copy(
             tiles = refinedLevel.tiles.filterValues { it.value != GridTile.Empty.value },
-        )
-
-        // --- NEW LOGIC STARTS HERE ---
-        val minX = refinedLevel.tiles.keys.minOf { it.x }
-        val minY = refinedLevel.tiles.keys.minOf { it.y }
-        val maxX = refinedLevel.tiles.keys.maxOf { it.x }
-        val maxY = refinedLevel.tiles.keys.maxOf { it.y }
-
-        // 3. Calculate new dimensions.
-        val newWidth = maxX - minX + 1
-        val newHeight = maxY - minY + 1
-
-        // 4. Re-map all positions and tiles to be relative to the new origin (minX, minY).
-        val remappedTiles = refinedLevel.tiles.mapKeys { (pos, _) ->
-            Position(pos.x - minX, pos.y - minY)
-        }
-        val newStartPosition = Position(
-            levelData.currentPosition.x - minX,
-            levelData.currentPosition.y - minY,
-        )
-        val newEndPosition = Position(
-            levelData.endingPosition.x - minX,
-            levelData.endingPosition.y - minY,
-        )
-
-        // 5. Return the final, compact level.
-        return LevelData(
-            width = newWidth,
-            height = newHeight,
-            tiles = remappedTiles,
-            currentPosition = newStartPosition,
-            endingPosition = newEndPosition,
         )
     }
 

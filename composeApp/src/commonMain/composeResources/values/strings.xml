@@ -5,7 +5,6 @@
     <string name="undo_last_move">Undo last move</string>
     <string name="redo_previous_move">Redo previous move</string>
     <string name="restart_the_level">Restart the level</string>
-    <string name="generate_the_level">Generate the level</string>
     <string name="show_a_hint">Show a hint</string>
     <string name="test_the_level">Test the level</string>
     <string name="save_the_level">Save the level</string>
@@ -23,4 +22,11 @@
 
     <!-- Content -->
     <string name="continue_where_you_left_off">Continue where you left off</string>
+    <string name="generate">Generate</string>
+    <string name="reset">Reset</string>
+    <string name="resize">Resize</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="width">Width</string>
+    <string name="height">Height</string>
 </resources>

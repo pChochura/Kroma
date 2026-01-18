@@ -7,6 +7,7 @@ android-targetSdk = "36"
 androidx-activity = "1.12.2"
 androidx-lifecycle = "2.9.6"
 androidx-datastore = "1.2.0"
+androidx-constraint-layout = "0.6.1"
 composeMultiplatform = "1.9.3"
 multiplatform-nav3-ui = "1.0.0-alpha06"
 compose-multiplatform-lifecycle = "2.10.0-alpha07"
@@ -29,6 +30,7 @@ androidx-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigat
 androidx-lifecycle-viewmodelNavigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "compose-multiplatform-lifecycle" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "androidx-datastore" }
 androidx-datastore-prefs = { module = "androidx.datastore:datastore-preferences", version.ref = "androidx-datastore" }
+androidx-constraint-layout = { module = "tech.annexflow.compose:constraintlayout-compose-multiplatform", version.ref = "androidx-constraint-layout" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }

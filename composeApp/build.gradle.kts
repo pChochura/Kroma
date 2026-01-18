@@ -48,6 +48,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodelNavigation3)
             implementation(libs.androidx.datastore)
             implementation(libs.androidx.datastore.prefs)
+            implementation(libs.androidx.constraint.layout)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.json.serialization)
 

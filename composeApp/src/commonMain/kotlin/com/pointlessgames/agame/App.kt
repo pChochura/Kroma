@@ -49,6 +49,11 @@ fun App() {
             onSurface = colors.brown,
 
             surfaceVariant = colors.tan,
+            surfaceContainerLow = colors.softCream,
+            surfaceContainer = colors.tan,
+            surfaceContainerHigh = colors.honeyOak,
+            surfaceContainerHighest = colors.rose,
+
             onSurfaceVariant = colors.brown,
 
             inverseSurface = colors.brown,

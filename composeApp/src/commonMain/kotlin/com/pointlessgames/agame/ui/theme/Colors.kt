@@ -9,6 +9,8 @@ internal data class Colors(
     val rose: Color = Color(0xFFDAB49D),
     val ochre: Color = Color(0xFFC08552),
     val brown: Color = Color(0xFF895737),
+    val honeyOak: Color = Color(0xFFEAD3AD),
+    val softCream: Color = Color(0xFFF9F3EB),
 )
 
 internal val DefaultColors = staticCompositionLocalOf { Colors() }

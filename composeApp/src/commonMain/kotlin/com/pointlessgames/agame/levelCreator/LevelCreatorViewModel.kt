@@ -10,6 +10,7 @@ import com.pointlessgames.agame.model.GridTile.Companion.MIN_VALUE
 import com.pointlessgames.agame.model.LevelData
 import com.pointlessgames.agame.model.Position
 import com.pointlessgames.agame.utils.next
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,6 +29,8 @@ internal class LevelCreatorViewModel(
     private val _uiState = MutableStateFlow(UiState())
     val uiState: StateFlow<UiState>
         get() = _uiState.asStateFlow()
+
+    private var currentAsyncJob: Job? = null
 
     fun onTileClicked(position: Position) {
         val currentTile = uiState.value.gridTiles[position] ?: GridTile.Empty
@@ -49,25 +52,9 @@ internal class LevelCreatorViewModel(
         _uiState.update { it.copy(endingPosition = position) }
     }
 
-    fun onWidthIncrement() {
-        _uiState.update { it.copy(width = it.width + 1) }
-    }
-
-    fun onWidthDecrement() {
-        _uiState.update { it.copy(width = it.width - 1) }
-    }
-
-    fun onHeightIncrement() {
-        _uiState.update { it.copy(height = it.height + 1) }
-    }
-
-    fun onHeightDecrement() {
-        _uiState.update { it.copy(height = it.height - 1) }
-    }
-
-    fun onStartClicked() {
+    fun onTestLevelClicked() {
         eventChannel.trySend(
-            Event.LevelCreated(
+            Event.TestLevel(
                 LevelData(
                     width = uiState.value.width,
                     height = uiState.value.height,
@@ -79,7 +66,7 @@ internal class LevelCreatorViewModel(
         )
     }
 
-    fun onRestartClicked() {
+    fun onResetClicked() {
         _uiState.update {
             it.copy(
                 startingPosition = Position(0, 0),
@@ -90,19 +77,22 @@ internal class LevelCreatorViewModel(
     }
 
     fun onGenerateLevelClicked() {
-        val generatedLevelData = Generator.generate(
-            width = uiState.value.width,
-            height = uiState.value.height,
-        ) ?: return
+        currentAsyncJob?.cancel()
+        currentAsyncJob = viewModelScope.launch {
+            val generatedLevelData = Generator.generate(
+                width = uiState.value.width,
+                height = uiState.value.height,
+            ) ?: return@launch
 
-        _uiState.update {
-            it.copy(
-                width = generatedLevelData.width,
-                height = generatedLevelData.height,
-                startingPosition = generatedLevelData.currentPosition,
-                endingPosition = generatedLevelData.endingPosition,
-                gridTiles = generatedLevelData.tiles,
-            )
+            _uiState.update {
+                it.copy(
+                    width = generatedLevelData.width,
+                    height = generatedLevelData.height,
+                    startingPosition = generatedLevelData.currentPosition,
+                    endingPosition = generatedLevelData.endingPosition,
+                    gridTiles = generatedLevelData.tiles,
+                )
+            }
         }
     }
 
@@ -112,14 +102,35 @@ internal class LevelCreatorViewModel(
                 levelData = LevelData(
                     width = uiState.value.width,
                     height = uiState.value.height,
-                    currentPosition = uiState.value.startingPosition,
-                    endingPosition = uiState.value.endingPosition,
-                    tiles = uiState.value.gridTiles.filterValues {
-                        it.value != GridTile.Empty.value
+                    currentPosition = uiState.value.startingPosition.copy(
+                        x = uiState.value.startingPosition.x.coerceIn(0 until uiState.value.width),
+                        y = uiState.value.startingPosition.y.coerceIn(0 until uiState.value.height),
+                    ),
+                    endingPosition = uiState.value.endingPosition.copy(
+                        x = uiState.value.endingPosition.x.coerceIn(0 until uiState.value.width),
+                        y = uiState.value.endingPosition.y.coerceIn(0 until uiState.value.height),
+                    ),
+                    tiles = uiState.value.gridTiles.filter { (key, value) ->
+                        value.value != GridTile.Empty.value &&
+                                key.x in 0 until uiState.value.width &&
+                                key.y in 0 until uiState.value.height
                     },
                 )
             )
         }
+    }
+
+    fun onSizeChanged(width: Int, height: Int) {
+        _uiState.update {
+            it.copy(
+                width = width,
+                height = height,
+            )
+        }
+    }
+
+    fun onBackClicked() {
+        eventChannel.trySend(Event.GoBack)
     }
 
     data class UiState(
@@ -131,6 +142,7 @@ internal class LevelCreatorViewModel(
     )
 
     sealed interface Event {
-        data class LevelCreated(val levelData: LevelData) : Event
+        data class TestLevel(val levelData: LevelData) : Event
+        data object GoBack : Event
     }
 }
