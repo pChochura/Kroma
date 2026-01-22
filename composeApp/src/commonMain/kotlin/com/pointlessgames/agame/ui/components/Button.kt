@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import com.pointlessgames.agame.ui.CustomIndicationNodeFactory
 import com.pointlessgames.agame.ui.TiltedRoundedCornersShape
+import com.pointlessgames.agame.ui.dragIndication
 import com.pointlessgames.agame.ui.theme.DefaultIconsSize
 import com.pointlessgames.agame.ui.theme.DefaultSpacing
 import org.jetbrains.compose.resources.DrawableResource
@@ -37,6 +38,7 @@ internal fun Button(
 
     Row(
         modifier = Modifier
+            .dragIndication()
             .clickable(
                 onClick = onClick,
                 role = Role.Button,

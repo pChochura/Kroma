@@ -14,6 +14,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import com.pointlessgames.agame.ui.CustomIndicationNodeFactory
 import com.pointlessgames.agame.ui.TiltedRoundedCornersShape
+import com.pointlessgames.agame.ui.dragIndication
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
@@ -40,6 +41,7 @@ internal fun ShapeButton(
         Box(
             modifier = Modifier
                 .size(size)
+                .dragIndication()
                 .clickable(
                     onClick = onClick,
                     role = Role.Button,

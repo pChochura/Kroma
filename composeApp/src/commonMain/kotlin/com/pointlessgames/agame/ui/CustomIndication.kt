@@ -2,17 +2,26 @@ package com.pointlessgames.agame.ui
 
 import androidx.compose.animation.Animatable
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.VectorConverter
 import androidx.compose.foundation.IndicationNodeFactory
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.graphics.drawscope.scale
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.input.pointer.PointerEvent
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.DrawModifierNode
+import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.node.PointerInputModifierNode
+import androidx.compose.ui.unit.IntSize
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -51,15 +60,15 @@ private class CustomIndicationNode(
 
     private suspend fun animateToPressed() {
         coroutineScope {
-            launch { animatedBackgroundColor.animateTo(pressedBackgroundColor, spring()) }
-            launch { animatedShapeProgress.animateTo(1f, spring()) }
+            launch { animatedBackgroundColor.animateTo(pressedBackgroundColor) }
+            launch { animatedShapeProgress.animateTo(1f) }
         }
     }
 
     private suspend fun animateToResting() {
         coroutineScope {
-            launch { animatedBackgroundColor.animateTo(defaultBackgroundColor, spring()) }
-            launch { animatedShapeProgress.animateTo(0f, spring()) }
+            launch { animatedBackgroundColor.animateTo(defaultBackgroundColor) }
+            launch { animatedShapeProgress.animateTo(0f) }
         }
     }
 
@@ -89,3 +98,92 @@ private class CustomIndicationNode(
         drawContent()
     }
 }
+
+private class DragIndicationNode : Modifier.Node(),
+    PointerInputModifierNode,
+    DrawModifierNode {
+
+    private companion object {
+        private const val DRAG_MOVEMENT_FACTOR = 0.1f
+    }
+
+    private val animatedDragOffset = Animatable(Offset.Zero, Offset.VectorConverter)
+    private val animatedScale = Animatable(1f)
+    private var initialPointerPosition: Offset? = null
+
+    override fun onPointerEvent(
+        pointerEvent: PointerEvent,
+        pass: PointerEventPass,
+        bounds: IntSize,
+    ) {
+        if (pass != PointerEventPass.Initial) return
+
+        pointerEvent.changes.firstOrNull()?.let {
+            when (pointerEvent.type) {
+                PointerEventType.Press -> {
+                    initialPointerPosition = it.position
+                    coroutineScope.launch {
+                        launch { animatedDragOffset.stop() }
+                        launch { animatedScale.animateTo(1.1f) }
+                    }
+                }
+
+                PointerEventType.Move -> {
+                    initialPointerPosition?.let { initialPos ->
+                        val currentPos = it.position
+                        val dragDelta = currentPos - initialPos
+                        val targetOffset = dragDelta * DRAG_MOVEMENT_FACTOR
+                        if (animatedDragOffset.value != targetOffset) {
+                            coroutineScope.launch {
+                                animatedDragOffset.snapTo(targetOffset)
+                            }
+                        }
+                    }
+                }
+
+                PointerEventType.Release, PointerEventType.Exit -> {
+                    initialPointerPosition = null
+                    coroutineScope.launch {
+                        launch { animatedDragOffset.animateTo(Offset.Zero) }
+                        launch { animatedScale.animateTo(1f) }
+                    }
+                }
+
+                else -> Unit
+            }
+        }
+    }
+
+    override fun onCancelPointerInput() {
+        initialPointerPosition = null
+        coroutineScope.launch {
+            launch { animatedDragOffset.animateTo(Offset.Zero) }
+            launch { animatedScale.animateTo(1f) }
+        }
+    }
+
+    override fun ContentDrawScope.draw() {
+        scale(scale = animatedScale.value) {
+            translate(
+                left = animatedDragOffset.value.x,
+                top = animatedDragOffset.value.y,
+                block = { this@draw.drawContent() },
+            )
+        }
+    }
+}
+
+private class DragIndicationElement() : ModifierNodeElement<DragIndicationNode>() {
+    override fun create() = DragIndicationNode()
+    override fun update(node: DragIndicationNode) = Unit
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+        return true
+    }
+
+    override fun hashCode(): Int = this::class.hashCode()
+}
+
+internal fun Modifier.dragIndication() = this then DragIndicationElement()
