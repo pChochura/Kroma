@@ -99,13 +99,12 @@ private class CustomIndicationNode(
     }
 }
 
-private class DragIndicationNode : Modifier.Node(),
+private class DragIndicationNode(
+    var isEnabled: Boolean,
+    var dragForce: Float,
+) : Modifier.Node(),
     PointerInputModifierNode,
     DrawModifierNode {
-
-    private companion object {
-        private const val DRAG_MOVEMENT_FACTOR = 0.1f
-    }
 
     private val animatedDragOffset = Animatable(Offset.Zero, Offset.VectorConverter)
     private val animatedScale = Animatable(1f)
@@ -116,7 +115,7 @@ private class DragIndicationNode : Modifier.Node(),
         pass: PointerEventPass,
         bounds: IntSize,
     ) {
-        if (pass != PointerEventPass.Initial) return
+        if (pass != PointerEventPass.Initial || !isEnabled) return
 
         pointerEvent.changes.firstOrNull()?.let {
             when (pointerEvent.type) {
@@ -132,7 +131,7 @@ private class DragIndicationNode : Modifier.Node(),
                     initialPointerPosition?.let { initialPos ->
                         val currentPos = it.position
                         val dragDelta = currentPos - initialPos
-                        val targetOffset = dragDelta * DRAG_MOVEMENT_FACTOR
+                        val targetOffset = dragDelta * dragForce
                         if (animatedDragOffset.value != targetOffset) {
                             coroutineScope.launch {
                                 animatedDragOffset.snapTo(targetOffset)
@@ -163,6 +162,10 @@ private class DragIndicationNode : Modifier.Node(),
     }
 
     override fun ContentDrawScope.draw() {
+        if (!isEnabled) {
+            return drawContent()
+        }
+
         scale(scale = animatedScale.value) {
             translate(
                 left = animatedDragOffset.value.x,
@@ -173,9 +176,15 @@ private class DragIndicationNode : Modifier.Node(),
     }
 }
 
-private class DragIndicationElement() : ModifierNodeElement<DragIndicationNode>() {
-    override fun create() = DragIndicationNode()
-    override fun update(node: DragIndicationNode) = Unit
+private class DragIndicationElement(
+    private val isEnabled: Boolean,
+    private val dragForce: Float,
+) : ModifierNodeElement<DragIndicationNode>() {
+    override fun create() = DragIndicationNode(isEnabled, dragForce)
+    override fun update(node: DragIndicationNode) {
+        node.isEnabled = isEnabled
+        node.dragForce = dragForce
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -186,4 +195,5 @@ private class DragIndicationElement() : ModifierNodeElement<DragIndicationNode>(
     override fun hashCode(): Int = this::class.hashCode()
 }
 
-internal fun Modifier.dragIndication() = this then DragIndicationElement()
+internal fun Modifier.dragIndication(isEnabled: Boolean = true, dragForce: Float = 0.1f) =
+    this then DragIndicationElement(isEnabled, dragForce)

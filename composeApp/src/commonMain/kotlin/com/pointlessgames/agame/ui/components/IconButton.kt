@@ -1,21 +1,16 @@
 package com.pointlessgames.agame.ui.components
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.size
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
+import com.pointlessgames.agame.ui.TiltedRoundedCornersShape
+import com.pointlessgames.agame.ui.theme.DefaultCornerRadius
+import com.pointlessgames.agame.ui.theme.DefaultIconsSize
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -26,25 +21,20 @@ internal fun IconButton(
     onClick: () -> Unit,
     tint: Color = LocalContentColor.current,
     position: Position = Position.ABOVE,
-    size: Dp = 32.dp,
 ) {
-    Tooltip(
-        position = position,
+    ShapeButton(
+        size = DefaultIconsSize.current.large,
+        iconSize = DefaultIconsSize.current.medium,
+        icon = iconRes,
         contentDescription = contentDescription,
-    ) {
-        IconButton(
-            enabled = isEnabled,
-            onClick = onClick,
-            colors = IconButtonDefaults.iconButtonColors(
-                contentColor = tint,
-                disabledContentColor = tint.copy(alpha = 0.2f),
-            ),
-        ) {
-            Icon(
-                modifier = Modifier.size(size),
-                painter = painterResource(iconRes),
-                contentDescription = stringResource(contentDescription),
-            )
-        }
-    }
+        defaultShape = TiltedRoundedCornersShape(0f, DefaultCornerRadius.current.full),
+        pressedShape = TiltedRoundedCornersShape(0f, DefaultCornerRadius.current.full),
+        defaultBackgroundColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0f),
+        pressedBackgroundColor = MaterialTheme.colorScheme.tertiary,
+        contentColor = tint.copy(alpha = if (isEnabled) 1f else 0.2f),
+        isEnabled = isEnabled,
+        dragForce = 0.03f,
+        tooltipPosition = position,
+        onClick = onClick,
+    )
 }

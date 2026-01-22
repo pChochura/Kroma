@@ -31,6 +31,8 @@ internal fun ShapeButton(
     defaultBackgroundColor: Color,
     pressedBackgroundColor: Color,
     contentColor: Color,
+    isEnabled: Boolean = true,
+    dragForce: Float = 0.1f,
     tooltipPosition: Position = Position.ABOVE,
     onClick: () -> Unit,
 ) {
@@ -41,8 +43,9 @@ internal fun ShapeButton(
         Box(
             modifier = Modifier
                 .size(size)
-                .dragIndication()
+                .dragIndication(isEnabled, dragForce)
                 .clickable(
+                    enabled = isEnabled,
                     onClick = onClick,
                     role = Role.Button,
                     indication = CustomIndicationNodeFactory(
