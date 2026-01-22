@@ -21,7 +21,7 @@ kotlin {
             baseName = "ComposeApp"
             isStatic = true
             linkerOpts.add("-lsqlite3")
-            freeCompilerArgs += "-Xbinary=bundleId=com.pointlessgames.agame"
+            freeCompilerArgs += "-Xbinary=bundleId=com.pointlessgames.kroma"
         }
     }
 
@@ -73,11 +73,11 @@ kotlin {
 }
 
 android {
-    namespace = "com.pointlessgames.agame"
+    namespace = "com.pointlessgames.kroma"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "com.pointlessgames.agame"
+        applicationId = "com.pointlessgames.kroma"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
@@ -101,11 +101,11 @@ android {
 
 compose.desktop {
     application {
-        mainClass = "com.pointlessgames.agame.MainKt"
+        mainClass = "com.pointlessgames.kroma.MainKt"
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.pointlessgames.agame"
+            packageName = "com.pointlessgames.kroma"
             packageVersion = "1.0.0"
         }
     }

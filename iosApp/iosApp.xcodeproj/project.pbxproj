@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		A1218305A84EC61B81129C1F /* AGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1218305A84EC61B81129C1F /* Kroma.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Kroma.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -87,7 +87,7 @@
 			packageProductDependencies = (
 			);
 			productName = iosApp;
-			productReference = A1218305A84EC61B81129C1F /* AGame.app */;
+			productReference = A1218305A84EC61B81129C1F /* Kroma.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */

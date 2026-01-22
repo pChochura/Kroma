@@ -1,7 +1,7 @@
 TEAM_ID=
 
-PRODUCT_NAME=com.pointlessgames.agame
-PRODUCT_BUNDLE_IDENTIFIER=com.pointlessgames.agame$(TEAM_ID)
+PRODUCT_NAME=com.pointlessgames.kroma
+PRODUCT_BUNDLE_IDENTIFIER=com.pointlessgames.kroma$(TEAM_ID)
 
 CURRENT_PROJECT_VERSION=1
 MARKETING_VERSION=1.0
