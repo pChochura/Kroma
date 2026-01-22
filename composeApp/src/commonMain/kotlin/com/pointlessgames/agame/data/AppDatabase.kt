@@ -25,7 +25,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun levelDao(): LevelDao
 }
 
-@Suppress("KotlinNoActualForExpect")
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
     override fun initialize(): AppDatabase
 }
