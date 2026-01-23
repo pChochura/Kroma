@@ -1,5 +1,6 @@
 package com.pointlessgames.kroma.ui.components
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -32,6 +33,7 @@ internal fun Button(
     defaultBackgroundColor: Color,
     pressedBackgroundColor: Color,
     contentColor: Color,
+    isLoading: Boolean = false,
     onClick: () -> Unit,
 ) {
     val spacing = DefaultSpacing.current
@@ -57,13 +59,20 @@ internal fun Button(
         horizontalArrangement = Arrangement.spacedBy(spacing.extraSmall),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        icon?.let {
-            Icon(
-                modifier = Modifier.size(DefaultIconsSize.current.small),
-                painter = painterResource(icon),
-                contentDescription = null,
-                tint = contentColor,
-            )
+        AnimatedContent(isLoading) { isLoading ->
+            if (isLoading) {
+                InlineLoader(
+                    size = DefaultIconsSize.current.extraSmall,
+                    animationDuration = 3000,
+                )
+            } else if (icon != null) {
+                Icon(
+                    modifier = Modifier.size(DefaultIconsSize.current.small),
+                    painter = painterResource(icon),
+                    contentDescription = null,
+                    tint = contentColor,
+                )
+            }
         }
 
         Text(

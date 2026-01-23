@@ -16,19 +16,23 @@ import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
+import com.pointlessgames.kroma.ui.theme.DefaultIconsSize
 
 private const val ANIMATION_DURATION = 500
 
 @Composable
-internal fun InlineLoader() {
+internal fun InlineLoader(
+    size: Dp = DefaultIconsSize.current.extraLarge,
+    animationDuration: Int = ANIMATION_DURATION,
+) {
     val transition = rememberInfiniteTransition("InlineLoader")
     val radius by transition.animateFloat(
         initialValue = 10f,
         targetValue = 100f,
         animationSpec = infiniteRepeatable(
             animation = tween(
-                durationMillis = ANIMATION_DURATION,
+                durationMillis = animationDuration,
                 easing = EaseInOutElastic,
             ),
             repeatMode = RepeatMode.Reverse,
@@ -39,7 +43,7 @@ internal fun InlineLoader() {
         targetValue = 90f,
         animationSpec = infiniteRepeatable(
             animation = tween(
-                durationMillis = ANIMATION_DURATION,
+                durationMillis = animationDuration,
                 easing = EaseInOutElastic,
             ),
             repeatMode = RepeatMode.Reverse,
@@ -50,7 +54,7 @@ internal fun InlineLoader() {
         targetValue = Color(137, 87, 55),
         animationSpec = infiniteRepeatable(
             animation = tween(
-                durationMillis = ANIMATION_DURATION,
+                durationMillis = animationDuration,
                 easing = EaseInOutElastic,
             ),
             repeatMode = RepeatMode.Reverse,
@@ -59,7 +63,7 @@ internal fun InlineLoader() {
 
     Box(
         modifier = Modifier
-            .size(64.dp)
+            .size(size)
             .graphicsLayer { rotationZ = rotation }
             .drawWithCache {
                 val cornerRadius = CornerRadius(radius, radius)

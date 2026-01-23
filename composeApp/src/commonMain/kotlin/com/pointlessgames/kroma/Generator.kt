@@ -170,6 +170,8 @@ internal object Generator {
 
         return refinedLevel.copy(
             tiles = refinedLevel.tiles.filterValues { it.value != GridTile.Empty.value },
+            currentPosition = levelData.currentPosition,
+            endingPosition = levelData.endingPosition,
         )
     }
 

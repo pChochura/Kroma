@@ -10,6 +10,7 @@ import com.pointlessgames.kroma.model.GridTile.Companion.MIN_VALUE
 import com.pointlessgames.kroma.model.LevelData
 import com.pointlessgames.kroma.model.Position
 import com.pointlessgames.kroma.utils.next
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -78,7 +79,8 @@ internal class LevelCreatorViewModel(
 
     fun onGenerateLevelClicked() {
         currentAsyncJob?.cancel()
-        currentAsyncJob = viewModelScope.launch {
+        _uiState.update { it.copy(isGenerating = true) }
+        currentAsyncJob = viewModelScope.launch(Dispatchers.Default) {
             val generatedLevelData = Generator.generate(
                 width = uiState.value.width,
                 height = uiState.value.height,
@@ -91,6 +93,7 @@ internal class LevelCreatorViewModel(
                     startingPosition = generatedLevelData.currentPosition,
                     endingPosition = generatedLevelData.endingPosition,
                     gridTiles = generatedLevelData.tiles,
+                    isGenerating = false,
                 )
             }
         }
@@ -139,6 +142,7 @@ internal class LevelCreatorViewModel(
         val startingPosition: Position = Position(0, 0),
         val endingPosition: Position = Position(0, 0),
         val gridTiles: Map<Position, GridTile> = emptyMap(),
+        val isGenerating: Boolean = false,
     )
 
     sealed interface Event {

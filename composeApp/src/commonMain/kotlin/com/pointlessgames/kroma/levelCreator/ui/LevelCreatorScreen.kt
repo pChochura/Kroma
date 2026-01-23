@@ -245,10 +245,11 @@ private fun Board(
     Column(
         modifier = modifier
             .padding(spacing.extraLarge),
-        verticalArrangement = Arrangement.spacedBy(spacing.large),
+        verticalArrangement = Arrangement.spacedBy(spacing.large, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Button(
+            isLoading = uiState.isGenerating,
             icon = Res.drawable.icon_magic,
             text = stringResource(Res.string.generate),
             defaultShape = TiltedRoundedCornersShape(0f, DefaultCornerRadius.current.small),
@@ -260,8 +261,6 @@ private fun Board(
         )
 
         BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
             val maxSize = DpSize(width = maxWidth, height = maxHeight)
