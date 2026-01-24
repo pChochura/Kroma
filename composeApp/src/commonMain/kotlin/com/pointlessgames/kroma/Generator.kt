@@ -6,6 +6,10 @@ import com.pointlessgames.kroma.model.GridTile.Companion.MIN_VALUE
 import com.pointlessgames.kroma.model.LevelData
 import com.pointlessgames.kroma.model.Position
 import com.pointlessgames.kroma.utils.next
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
 internal object Generator {
@@ -19,57 +23,68 @@ internal object Generator {
     private const val MUTATION_RATE = 0.4 // 40% chance to mutate a new child
     private const val ELITISM_COUNT = 2 // Automatically keep the top 2 fittest levels
 
-    fun generate(width: Int, height: Int): LevelData? = runCatching {
-        // 1. INITIALIZATION: Create an initial population of random levels.
-        var population = (1..POPULATION_SIZE).map { createRandomInitialLevel(width, height) }
+    suspend fun generate(width: Int, height: Int): LevelData? = withContext(Dispatchers.Default) {
+        runCatching {
+            // 1. INITIALIZATION: Create an initial population of random levels.
+            var population = (1..POPULATION_SIZE).map { createRandomInitialLevel(width, height) }
 
-        repeat(MAX_GENERATIONS) { generation ->
-            // 2. FITNESS EVALUATION: Calculate a fitness score for each level in the population.
-            val scoredPopulation = population.map { level ->
-                val fitness = Solver.getBestMoveSequence(level)?.size ?: 0
-                level to fitness
-            }.sortedByDescending { it.second } // Sort from best (fittest) to worst
+            repeat(MAX_GENERATIONS) { generation ->
+                // 2. FITNESS EVALUATION: Calculate a fitness score for each level in the population.
+                val scoredPopulation = population.map { level ->
+                    val fitness = Solver.getBestMoveSequence(level)?.size ?: 0
+                    level to fitness
+                }.sortedByDescending { it.second } // Sort from best (fittest) to worst
 
-            val bestInGeneration = scoredPopulation.first()
+                val bestInGeneration = scoredPopulation.first()
 
-            // Check for termination condition: If the best level is complex enough, we're done.
-            if (bestInGeneration.second >= MIN_MOVES_COMPLEXITY) {
-                println("Found suitable level in generation $generation.")
-                return pruneUntouchedTiles(bestInGeneration.first)
-            }
-
-            val nextGeneration = mutableListOf<LevelData>()
-
-            // 3. SELECTION & EVOLUTION
-            // Elitism: Automatically carry over the best individuals to the next generation.
-            nextGeneration.addAll(scoredPopulation.take(ELITISM_COUNT).map { it.first })
-
-            // Create the rest of the new population through crossover and mutation.
-            while (nextGeneration.size < POPULATION_SIZE) {
-                // Select two parents from the top half of the population (tournament selection).
-                val parent1 = scoredPopulation.take(POPULATION_SIZE / 2).random(random).first
-                val parent2 = scoredPopulation.take(POPULATION_SIZE / 2).random(random).first
-
-                // 4. CROSSOVER: Create a child by combining the two parents.
-                var child = crossover(parent1, parent2)
-
-                // 5. MUTATION: Apply random modifications to the child based on the mutation rate.
-                if (random.nextFloat() < MUTATION_RATE) {
-                    child = mutate(child)
+                // Check for termination condition: If the best level is complex enough, we're done.
+                if (bestInGeneration.second >= MIN_MOVES_COMPLEXITY) {
+                    println("Found suitable level in generation $generation.")
+                    return@withContext pruneUntouchedTiles(bestInGeneration.first)
                 }
 
-                nextGeneration.add(child)
+                val nextGeneration = mutableListOf<LevelData>()
+
+                // 3. SELECTION & EVOLUTION
+                // Elitism: Automatically carry over the best individuals to the next generation.
+                nextGeneration.addAll(scoredPopulation.take(ELITISM_COUNT).map { it.first })
+
+                // Create the rest of the new population through crossover and mutation.
+                while (currentCoroutineContext().isActive && nextGeneration.size < POPULATION_SIZE) {
+                    // Select two parents from the top half of the population (tournament selection).
+                    val parent1 = scoredPopulation.take(POPULATION_SIZE / 2).random(random).first
+                    val parent2 = scoredPopulation.take(POPULATION_SIZE / 2).random(random).first
+
+                    // 4. CROSSOVER: Create a child by combining the two parents.
+                    var child = crossover(parent1, parent2)
+
+                    // 5. MUTATION: Apply random modifications to the child based on the mutation rate.
+                    if (random.nextFloat() < MUTATION_RATE) {
+                        child = mutate(child)
+                    }
+
+                    nextGeneration.add(child)
+                }
+                population = nextGeneration
+
+
+                if (!currentCoroutineContext().isActive) {
+                    return@withContext pruneUntouchedTiles(bestInGeneration.first)
+                }
             }
-            population = nextGeneration
-        }
 
-        // If max generations are reached, return the best level found so far.
-        val bestOverall = population
-            .map { it to (Solver.getBestMoveSequence(it)?.size ?: 0) }
-            .maxByOrNull { it.second }
+            // If max generations are reached, return the best level found so far.
+            val bestOverall = population
+                .map { it to (Solver.getBestMoveSequence(it)?.size ?: 0) }
+                .maxByOrNull { it.second }
 
-        return bestOverall?.takeIf { it.second > 0 }?.first?.let { pruneUntouchedTiles(it) }
-    }.getOrNull()
+            return@withContext bestOverall?.takeIf { it.second > 0 }?.first?.let {
+                pruneUntouchedTiles(
+                    it
+                )
+            }
+        }.getOrNull()
+    }
 
     /**
      * Creates a new child level by combining tiles from two parent levels.
@@ -90,8 +105,13 @@ internal object Generator {
             // Handle the edge case of an empty level after crossover
             return createRandomInitialLevel(parent1.width, parent1.height)
         }
-        val startPos = if (parent1.currentPosition in validPositions) parent1.currentPosition else validPositions.random(random)
-        val endPos = if (parent1.endingPosition in validPositions && parent1.endingPosition != startPos) parent1.endingPosition else (validPositions - startPos).randomOrNull() ?: startPos
+        val startPos =
+            if (parent1.currentPosition in validPositions) parent1.currentPosition else validPositions.random(
+                random
+            )
+        val endPos =
+            if (parent1.endingPosition in validPositions && parent1.endingPosition != startPos) parent1.endingPosition else (validPositions - startPos).randomOrNull()
+                ?: startPos
 
         return LevelData(
             width = parent1.width,
@@ -123,7 +143,7 @@ internal object Generator {
         )
     }
 
-    private fun pruneUntouchedTiles(levelData: LevelData): LevelData {
+    private suspend fun pruneUntouchedTiles(levelData: LevelData): LevelData {
         val solutionSequence = Solver.getBestMoveSequence(levelData) ?: return levelData
         var currentLevelData = levelData
 

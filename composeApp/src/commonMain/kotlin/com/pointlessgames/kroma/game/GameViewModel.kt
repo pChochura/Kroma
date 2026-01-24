@@ -92,9 +92,6 @@ internal class GameViewModel(
 
                 canMovePreviousLevel = loadedState.level + 1 > 0,
                 canMoveNextLevel = loadedState.level + 1 < firstUnfinishedLevelIndex,
-
-                canHint = !Solver.getBestMoveSequence(levelData).isNullOrEmpty(),
-                possibleMoves = Game.getPossibleMoves(levelData),
             )
         }
 
@@ -116,8 +113,6 @@ internal class GameViewModel(
 
                 canMovePreviousLevel = loadedState.level - 1 > 0,
                 canMoveNextLevel = loadedState.level - 1 < firstUnfinishedLevelIndex,
-
-                possibleMoves = Game.getPossibleMoves(levelData),
             )
         }
 
@@ -231,23 +226,25 @@ internal class GameViewModel(
     }
 
     fun onHintClicked() {
-        val nextMove = requireNotNull(Solver.getBestNextMove(loadedState.levelData)) {
-            "Could not find a solution for this level."
+        viewModelScope.launch {
+            val nextMove = requireNotNull(Solver.getBestNextMove(loadedState.levelData)) {
+                "Could not find a solution for this level."
+            }
+
+            undoManager.insertState(
+                UndoState(
+                    currentPosition = loadedState.levelData.currentPosition,
+                    gridTiles = loadedState.levelData.tiles.toMap(),
+                ),
+            )
+
+            updateState(
+                levelData = Game.performMove(
+                    levelData = loadedState.levelData,
+                    moveDirection = nextMove,
+                ),
+            )
         }
-
-        undoManager.insertState(
-            UndoState(
-                currentPosition = loadedState.levelData.currentPosition,
-                gridTiles = loadedState.levelData.tiles.toMap(),
-            ),
-        )
-
-        updateState(
-            levelData = Game.performMove(
-                levelData = loadedState.levelData,
-                moveDirection = nextMove,
-            ),
-        )
     }
 
     fun onPreviousLevelClicked() {
