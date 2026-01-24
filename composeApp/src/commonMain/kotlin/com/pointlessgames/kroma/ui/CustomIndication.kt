@@ -183,7 +183,7 @@ private class DragIndicationNode(
     }
 }
 
-private class DragIndicationElement(
+private data class DragIndicationElement(
     private val isEnabled: Boolean,
     private val dragForce: Float,
 ) : ModifierNodeElement<DragIndicationNode>() {
@@ -192,14 +192,6 @@ private class DragIndicationElement(
         node.isEnabled = isEnabled
         node.dragForce = dragForce
     }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-        return true
-    }
-
-    override fun hashCode(): Int = this::class.hashCode()
 }
 
 internal fun Modifier.dragIndication(isEnabled: Boolean = true, dragForce: Float = 0.03f) =
