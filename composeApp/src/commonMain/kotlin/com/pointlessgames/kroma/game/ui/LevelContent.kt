@@ -51,6 +51,7 @@ import kroma.composeapp.generated.resources.go_to_previous_level
 import kroma.composeapp.generated.resources.icon_arrow_left
 import kroma.composeapp.generated.resources.icon_arrow_right
 import kroma.composeapp.generated.resources.icon_lightbulb
+import kroma.composeapp.generated.resources.icon_question_mark
 import kroma.composeapp.generated.resources.icon_redo
 import kroma.composeapp.generated.resources.icon_restart
 import kroma.composeapp.generated.resources.icon_undo
@@ -58,6 +59,7 @@ import kroma.composeapp.generated.resources.no_hints_available
 import kroma.composeapp.generated.resources.redo_previous_move
 import kroma.composeapp.generated.resources.restart_the_level
 import kroma.composeapp.generated.resources.show_a_hint
+import kroma.composeapp.generated.resources.show_tutorial
 import kroma.composeapp.generated.resources.undo_last_move
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -81,7 +83,11 @@ internal fun LevelContent(
         ),
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
-            Box(modifier = Modifier.align(Alignment.CenterStart)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 ShapeButton(
                     size = DefaultIconsSize.current.large,
                     iconSize = DefaultIconsSize.current.small,
@@ -94,6 +100,19 @@ internal fun LevelContent(
                     contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                     tooltipPosition = Position.BELOW,
                     onClick = viewModel::onBackClicked,
+                )
+                ShapeButton(
+                    size = DefaultIconsSize.current.large,
+                    iconSize = DefaultIconsSize.current.small,
+                    icon = Res.drawable.icon_question_mark,
+                    contentDescription = Res.string.show_tutorial,
+                    defaultShape = TiltedRoundedCornersShape(-45f, DefaultCornerRadius.current.medium),
+                    pressedShape = TiltedRoundedCornersShape(0f, DefaultCornerRadius.current.medium),
+                    defaultBackgroundColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                    pressedBackgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    tooltipPosition = Position.BELOW,
+                    onClick = {},
                 )
             }
 
