@@ -33,7 +33,7 @@ internal fun IconButton(
         pressedBackgroundColor = MaterialTheme.colorScheme.tertiary,
         contentColor = tint.copy(alpha = if (isEnabled) 1f else 0.2f),
         isEnabled = isEnabled,
-        dragForce = 0.03f,
+        dragForce = 0.01f,
         tooltipPosition = position,
         onClick = onClick,
     )

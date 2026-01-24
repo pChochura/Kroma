@@ -32,7 +32,7 @@ internal fun ShapeButton(
     pressedBackgroundColor: Color,
     contentColor: Color,
     isEnabled: Boolean = true,
-    dragForce: Float = 0.1f,
+    dragForce: Float = 0.03f,
     tooltipPosition: Position = Position.ABOVE,
     onClick: () -> Unit,
 ) {

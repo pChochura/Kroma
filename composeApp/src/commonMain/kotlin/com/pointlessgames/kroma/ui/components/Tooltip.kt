@@ -1,5 +1,6 @@
 package com.pointlessgames.kroma.ui.components
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.BasicTooltipBox
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -11,9 +12,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TooltipAnchorPosition
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
 import com.pointlessgames.kroma.ui.theme.DefaultSpacing
+import com.pointlessgames.kroma.utils.defaultAnimationSpecFloat
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -34,8 +40,25 @@ internal fun Tooltip(
             },
         ),
         tooltip = {
+            val alpha = Animatable(0f)
+            val scale = Animatable(0.4f)
+
+            LaunchedEffect(Unit) {
+                launch { alpha.animateTo(1f, defaultAnimationSpecFloat) }
+                launch { scale.animateTo(1f, defaultAnimationSpecFloat) }
+            }
+
             Text(
                 modifier = Modifier
+                    .graphicsLayer {
+                        this.alpha = alpha.value
+                        this.scaleX = scale.value
+                        this.scaleY = scale.value
+                        this.transformOrigin = when (position) {
+                            Position.ABOVE -> TransformOrigin(0.5f, 1f)
+                            Position.BELOW -> TransformOrigin(0.5f, 0f)
+                        }
+                    }
                     .clip(MaterialTheme.shapes.small)
                     .background(MaterialTheme.colorScheme.inverseSurface)
                     .padding(

@@ -12,8 +12,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
+import androidx.compose.ui.graphics.drawscope.rotateRad
 import androidx.compose.ui.graphics.drawscope.scale
-import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -22,9 +22,12 @@ import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.node.PointerInputModifierNode
 import androidx.compose.ui.unit.IntSize
+import com.pointlessgames.kroma.utils.defaultAnimationSpecFloat
+import com.pointlessgames.kroma.utils.defaultAnimationSpecOffset
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlin.math.atan2
 
 class CustomIndicationNodeFactory(
     private val defaultShape: TiltedRoundedCornersShape,
@@ -61,14 +64,14 @@ private class CustomIndicationNode(
     private suspend fun animateToPressed() {
         coroutineScope {
             launch { animatedBackgroundColor.animateTo(pressedBackgroundColor) }
-            launch { animatedShapeProgress.animateTo(1f) }
+            launch { animatedShapeProgress.animateTo(1f, defaultAnimationSpecFloat) }
         }
     }
 
     private suspend fun animateToResting() {
         coroutineScope {
             launch { animatedBackgroundColor.animateTo(defaultBackgroundColor) }
-            launch { animatedShapeProgress.animateTo(0f) }
+            launch { animatedShapeProgress.animateTo(0f, defaultAnimationSpecFloat) }
         }
     }
 
@@ -123,7 +126,7 @@ private class DragIndicationNode(
                     initialPointerPosition = it.position
                     coroutineScope.launch {
                         launch { animatedDragOffset.stop() }
-                        launch { animatedScale.animateTo(1.1f) }
+                        launch { animatedScale.animateTo(1.1f, defaultAnimationSpecFloat) }
                     }
                 }
 
@@ -131,22 +134,15 @@ private class DragIndicationNode(
                     initialPointerPosition?.let { initialPos ->
                         val currentPos = it.position
                         val dragDelta = currentPos - initialPos
-                        val targetOffset = dragDelta * dragForce
-                        if (animatedDragOffset.value != targetOffset) {
+                        if (animatedDragOffset.value != dragDelta) {
                             coroutineScope.launch {
-                                animatedDragOffset.snapTo(targetOffset)
+                                animatedDragOffset.snapTo(dragDelta)
                             }
                         }
                     }
                 }
 
-                PointerEventType.Release, PointerEventType.Exit -> {
-                    initialPointerPosition = null
-                    coroutineScope.launch {
-                        launch { animatedDragOffset.animateTo(Offset.Zero) }
-                        launch { animatedScale.animateTo(1f) }
-                    }
-                }
+                PointerEventType.Release, PointerEventType.Exit -> onCancelPointerInput()
 
                 else -> Unit
             }
@@ -156,8 +152,8 @@ private class DragIndicationNode(
     override fun onCancelPointerInput() {
         initialPointerPosition = null
         coroutineScope.launch {
-            launch { animatedDragOffset.animateTo(Offset.Zero) }
-            launch { animatedScale.animateTo(1f) }
+            launch { animatedDragOffset.animateTo(Offset.Zero, defaultAnimationSpecOffset) }
+            launch { animatedScale.animateTo(1f, defaultAnimationSpecFloat) }
         }
     }
 
@@ -167,11 +163,22 @@ private class DragIndicationNode(
         }
 
         scale(scale = animatedScale.value) {
-            translate(
-                left = animatedDragOffset.value.x,
-                top = animatedDragOffset.value.y,
-                block = { this@draw.drawContent() },
-            )
+            val distance = animatedDragOffset.value.getDistance()
+            val angle = atan2(animatedDragOffset.value.y, animatedDragOffset.value.x)
+            val stretchFactor = distance / (distance + 6000f)
+            with(drawContext) {
+                transform.rotateRad(angle)
+                transform.scale(
+                    scaleX = 1f + stretchFactor * 1.5f,
+                    scaleY = 1f - stretchFactor * 0.2f,
+                )
+                transform.rotateRad(-angle)
+                transform.translate(
+                    left = animatedDragOffset.value.x * dragForce,
+                    top = animatedDragOffset.value.y * dragForce,
+                )
+            }
+            this@draw.drawContent()
         }
     }
 }
@@ -195,5 +202,5 @@ private class DragIndicationElement(
     override fun hashCode(): Int = this::class.hashCode()
 }
 
-internal fun Modifier.dragIndication(isEnabled: Boolean = true, dragForce: Float = 0.1f) =
+internal fun Modifier.dragIndication(isEnabled: Boolean = true, dragForce: Float = 0.03f) =
     this then DragIndicationElement(isEnabled, dragForce)
