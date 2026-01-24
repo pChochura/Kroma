@@ -9,12 +9,6 @@ import org.koin.dsl.module
 internal val dataModule = module {
     single { get<AppDatabase>().levelDao() }
 
-//    single {
-//        PreferenceDataStoreFactory.createWithPath(
-//            produceFile = { producePath().toPath() },
-//        )
-//    }
-
     singleOf(::LevelRepository)
     singleOf(::SettingsRepository)
 }

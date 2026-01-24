@@ -5,7 +5,9 @@ import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MutatePriority
@@ -28,6 +30,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpSize
 import com.pointlessgames.kroma.game.GameViewModel
 import com.pointlessgames.kroma.ui.LocalInnerPadding
@@ -40,6 +43,7 @@ import com.pointlessgames.kroma.ui.components.Tooltip
 import com.pointlessgames.kroma.ui.theme.DefaultCornerRadius
 import com.pointlessgames.kroma.ui.theme.DefaultIconsSize
 import com.pointlessgames.kroma.ui.theme.DefaultSpacing
+import com.pointlessgames.kroma.utils.readableDuration
 import kroma.composeapp.generated.resources.Res
 import kroma.composeapp.generated.resources.go_back
 import kroma.composeapp.generated.resources.go_to_next_level
@@ -225,13 +229,40 @@ internal fun LevelContent(
                 allowUserInput = false,
                 state = tooltipState,
             ) {
-                IconButton(
-                    isLoading = uiState.isLoadingHint,
-                    isEnabled = uiState.canHint,
-                    iconRes = Res.drawable.icon_lightbulb,
-                    contentDescription = Res.string.show_a_hint,
-                    onClick = viewModel::onHintClicked,
-                )
+                Box(contentAlignment = Alignment.BottomCenter) {
+                    IconButton(
+                        isLoading = uiState.isLoadingHint,
+                        isEnabled = uiState.canHint,
+                        iconRes = Res.drawable.icon_lightbulb,
+                        contentDescription = Res.string.show_a_hint,
+                        onClick = viewModel::onHintClicked,
+                    )
+
+                    AnimatedContent(
+                        modifier = Modifier
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                shape = MaterialTheme.shapes.small,
+                            ),
+                        targetState = uiState.hintCooldown,
+                        contentAlignment = Alignment.Center,
+                        transitionSpec = {
+                            fadeIn() + slideInVertically { -it / 2 } togetherWith
+                                    fadeOut() + slideOutVertically { it / 2 }
+                        },
+                    ) { cooldown ->
+                        if (cooldown > 0L) {
+                            Text(
+                                modifier = Modifier
+                                    .padding(spacing.extraSmall),
+                                text = cooldown.readableDuration(),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                            )
+                        }
+                    }
+                }
             }
         }
     }

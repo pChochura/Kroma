@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.pointlessgames.kroma.Game
 import com.pointlessgames.kroma.Solver
 import com.pointlessgames.kroma.data.LevelRepository
+import com.pointlessgames.kroma.data.SettingsRepository
 import com.pointlessgames.kroma.model.Direction
 import com.pointlessgames.kroma.model.LevelData
 import com.pointlessgames.kroma.model.UndoState
@@ -13,16 +14,23 @@ import com.pointlessgames.kroma.utils.UndoManager
 import com.pointlessgames.kroma.utils.toDegrees
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.atan2
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 internal class GameViewModel(
     private val levelRepository: LevelRepository,
+    private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
 
     private val undoManager = UndoManager<UndoState>()
@@ -41,6 +49,7 @@ internal class GameViewModel(
     private var swipeAngle = 0.0
 
     private var currentAsyncJob: Job? = null
+    private var cooldownTimerJob: Job? = null
 
     fun loadStoredLevels() {
         currentAsyncJob?.cancel()
@@ -74,6 +83,8 @@ internal class GameViewModel(
                     possibleMoves = Game.getPossibleMoves(nextLevelData),
                 )
             }
+
+            calculateHintCooldown()
         }
     }
 
@@ -137,6 +148,42 @@ internal class GameViewModel(
                     hasHints = !Solver.getBestMoveSequence(levelData).isNullOrEmpty(),
                     isLoadingHint = false,
                 )
+            }
+        }
+    }
+
+    private fun calculateHintCooldown() {
+        viewModelScope.launch {
+            val cooldownInMilliseconds = settingsRepository.getCooldownUntilNextHint()
+            val cooldown = cooldownInMilliseconds.milliseconds.inWholeSeconds
+            _uiState.update {
+                loadedState.copy(
+                    hintCooldown = cooldown,
+                    canHint = cooldown == 0L,
+                )
+            }
+
+            cooldownTimerJob?.cancel()
+            if (cooldown != 0L) {
+                cooldownTimerJob = launch {
+                    flow {
+                        while (isActive) {
+                            delay(1.seconds)
+                            emit(Unit)
+                        }
+                    }.collectLatest {
+                        _uiState.update {
+                            loadedState.copy(
+                                hintCooldown = loadedState.hintCooldown - 1,
+                                canHint = loadedState.hintCooldown == 1L,
+                            )
+                        }
+
+                        if (loadedState.hintCooldown == 0L) {
+                            cooldownTimerJob?.cancel()
+                        }
+                    }
+                }
             }
         }
     }
@@ -252,6 +299,9 @@ internal class GameViewModel(
                     moveDirection = nextMove,
                 ),
             )
+
+            settingsRepository.addLastHintUsed()
+            calculateHintCooldown()
         }
     }
 
@@ -288,10 +338,11 @@ internal class GameViewModel(
             val canRedo: Boolean = false,
             val canRestart: Boolean = false,
 
-            val canHint: Boolean = true,
+            val canHint: Boolean = false,
             val hasHints: Boolean = false,
             val isLoadingHint: Boolean = false,
             val showNoHintsPopup: Boolean = false,
+            val hintCooldown: Long = 0L,
 
             val possibleMoves: Set<Direction> = emptySet(),
         ) : UiState() {

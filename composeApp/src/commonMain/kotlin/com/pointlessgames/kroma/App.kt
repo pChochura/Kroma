@@ -81,6 +81,12 @@ fun App() {
                 fontFamily = fontFamily,
                 letterSpacing = 2.sp,
             ),
+            bodySmall = TextStyle(
+                fontSize = 12.sp,
+                lineHeight = 18.sp,
+                fontWeight = FontWeight.Light,
+                fontFamily = fontFamily,
+            ),
         ),
     ) {
         Scaffold(contentWindowInsets = WindowInsets.safeContent) { innerPadding ->

@@ -73,7 +73,7 @@ internal fun IconButton(
         pressedShape = TiltedRoundedCornersShape(0f, DefaultCornerRadius.current.full),
         defaultBackgroundColor = MaterialTheme.colorScheme.tertiary.copy(alpha = 0f),
         pressedBackgroundColor = MaterialTheme.colorScheme.tertiary,
-        contentColor = tint.copy(alpha = if (isEnabled) 1f else 0.2f),
+        contentColor = tint,
         isLoading = isLoading,
         isEnabled = isEnabled,
         dragForce = 0.01f,

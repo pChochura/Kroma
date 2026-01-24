@@ -1,5 +1,6 @@
 package com.pointlessgames.kroma.ui.components
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -60,13 +61,15 @@ internal fun ShapeButton(
                 ),
             contentAlignment = Alignment.Center,
         ) {
-            LoadingIcon(
-                isLoading = isLoading,
-                icon = icon,
-                contentColor = contentColor,
-                contentDescription = stringResource(contentDescription),
-                size = iconSize,
-            )
+            AnimatedContent(isEnabled) { isEnabled ->
+                LoadingIcon(
+                    isLoading = isLoading,
+                    icon = icon,
+                    contentColor = contentColor.copy(alpha = if (isEnabled) 1f else 0.2f),
+                    contentDescription = stringResource(contentDescription),
+                    size = iconSize,
+                )
+            }
         }
     }
 }
