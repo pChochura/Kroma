@@ -28,8 +28,8 @@ internal fun InlineLoader(
 ) {
     val transition = rememberInfiniteTransition("InlineLoader")
     val radius by transition.animateFloat(
-        initialValue = 10f,
-        targetValue = 100f,
+        initialValue = 100f,
+        targetValue = 10f,
         animationSpec = infiniteRepeatable(
             animation = tween(
                 durationMillis = animationDuration,

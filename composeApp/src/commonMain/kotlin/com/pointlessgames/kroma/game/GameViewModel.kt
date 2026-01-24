@@ -70,7 +70,7 @@ internal class GameViewModel(
                     canMovePreviousLevel = firstUnfinishedLevelIndex > 0,
                     canMoveNextLevel = false,
 
-                    canHint = !Solver.getBestMoveSequence(nextLevelData).isNullOrEmpty(),
+                    hasHints = !Solver.getBestMoveSequence(nextLevelData).isNullOrEmpty(),
                     possibleMoves = Game.getPossibleMoves(nextLevelData),
                 )
             }
@@ -134,7 +134,8 @@ internal class GameViewModel(
         currentAsyncJob = viewModelScope.launch {
             _uiState.update {
                 loadedState.copy(
-                    canHint = !Solver.getBestMoveSequence(levelData).isNullOrEmpty(),
+                    hasHints = !Solver.getBestMoveSequence(levelData).isNullOrEmpty(),
+                    isLoadingHint = false,
                 )
             }
         }
@@ -226,6 +227,13 @@ internal class GameViewModel(
     }
 
     fun onHintClicked() {
+        if (!loadedState.hasHints) {
+            _uiState.update { loadedState.copy(showNoHintsPopup = true) }
+
+            return
+        }
+
+        _uiState.update { loadedState.copy(isLoadingHint = true) }
         viewModelScope.launch {
             val nextMove = requireNotNull(Solver.getBestNextMove(loadedState.levelData)) {
                 "Could not find a solution for this level."
@@ -245,6 +253,10 @@ internal class GameViewModel(
                 ),
             )
         }
+    }
+
+    fun onNoHintsPopupDismissed() {
+        _uiState.update { loadedState.copy(showNoHintsPopup = false) }
     }
 
     fun onPreviousLevelClicked() {
@@ -275,7 +287,11 @@ internal class GameViewModel(
             val canUndo: Boolean = false,
             val canRedo: Boolean = false,
             val canRestart: Boolean = false,
-            val canHint: Boolean = false,
+
+            val canHint: Boolean = true,
+            val hasHints: Boolean = false,
+            val isLoadingHint: Boolean = false,
+            val showNoHintsPopup: Boolean = false,
 
             val possibleMoves: Set<Direction> = emptySet(),
         ) : UiState() {

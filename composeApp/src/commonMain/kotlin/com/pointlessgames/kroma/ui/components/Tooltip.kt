@@ -2,6 +2,7 @@ package com.pointlessgames.kroma.ui.components
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.BasicTooltipBox
+import androidx.compose.foundation.BasicTooltipState
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.style.TextAlign
 import com.pointlessgames.kroma.ui.theme.DefaultSpacing
 import com.pointlessgames.kroma.utils.defaultAnimationSpecFloat
 import kotlinx.coroutines.launch
@@ -30,6 +32,8 @@ internal enum class Position { ABOVE, BELOW }
 internal fun Tooltip(
     position: Position,
     contentDescription: StringResource,
+    allowUserInput: Boolean = true,
+    state: BasicTooltipState = rememberBasicTooltipState(isPersistent = false),
     content: @Composable () -> Unit,
 ) {
     BasicTooltipBox(
@@ -68,10 +72,12 @@ internal fun Tooltip(
                 text = stringResource(contentDescription),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.inverseOnSurface,
+                textAlign = TextAlign.Center,
             )
         },
-        state = rememberBasicTooltipState(isPersistent = false),
-        focusable = false,
+        state = state,
+        focusable = state.isPersistent,
+        enableUserInput = allowUserInput,
         content = content,
     )
 }

@@ -1,13 +1,10 @@
 package com.pointlessgames.kroma.ui.components
 
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,10 +16,8 @@ import androidx.compose.ui.semantics.Role
 import com.pointlessgames.kroma.ui.CustomIndicationNodeFactory
 import com.pointlessgames.kroma.ui.TiltedRoundedCornersShape
 import com.pointlessgames.kroma.ui.dragIndication
-import com.pointlessgames.kroma.ui.theme.DefaultIconsSize
 import com.pointlessgames.kroma.ui.theme.DefaultSpacing
 import org.jetbrains.compose.resources.DrawableResource
-import org.jetbrains.compose.resources.painterResource
 
 @Composable
 internal fun Button(
@@ -59,21 +54,11 @@ internal fun Button(
         horizontalArrangement = Arrangement.spacedBy(spacing.extraSmall),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        AnimatedContent(isLoading) { isLoading ->
-            if (isLoading) {
-                InlineLoader(
-                    size = DefaultIconsSize.current.extraSmall,
-                    animationDuration = 3000,
-                )
-            } else if (icon != null) {
-                Icon(
-                    modifier = Modifier.size(DefaultIconsSize.current.small),
-                    painter = painterResource(icon),
-                    contentDescription = null,
-                    tint = contentColor,
-                )
-            }
-        }
+        LoadingIcon(
+            isLoading = isLoading,
+            icon = icon,
+            contentColor = contentColor,
+        )
 
         Text(
             text = text,

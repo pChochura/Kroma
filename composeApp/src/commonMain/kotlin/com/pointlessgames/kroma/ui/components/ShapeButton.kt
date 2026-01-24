@@ -1,10 +1,10 @@
 package com.pointlessgames.kroma.ui.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -17,9 +17,9 @@ import com.pointlessgames.kroma.ui.TiltedRoundedCornersShape
 import com.pointlessgames.kroma.ui.dragIndication
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun ShapeButton(
     size: Dp,
@@ -31,6 +31,8 @@ internal fun ShapeButton(
     defaultBackgroundColor: Color,
     pressedBackgroundColor: Color,
     contentColor: Color,
+    modifier: Modifier = Modifier,
+    isLoading: Boolean = false,
     isEnabled: Boolean = true,
     dragForce: Float = 0.03f,
     tooltipPosition: Position = Position.ABOVE,
@@ -41,7 +43,7 @@ internal fun ShapeButton(
         contentDescription = contentDescription,
     ) {
         Box(
-            modifier = Modifier
+            modifier = modifier
                 .size(size)
                 .dragIndication(isEnabled, dragForce)
                 .clickable(
@@ -58,11 +60,12 @@ internal fun ShapeButton(
                 ),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(
-                modifier = Modifier.size(iconSize),
-                painter = painterResource(icon),
+            LoadingIcon(
+                isLoading = isLoading,
+                icon = icon,
+                contentColor = contentColor,
                 contentDescription = stringResource(contentDescription),
-                tint = contentColor,
+                size = iconSize,
             )
         }
     }
