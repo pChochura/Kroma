@@ -370,7 +370,7 @@ private fun BottomBar(
             icon = Res.drawable.icon_play,
             contentDescription = Res.string.start_game,
             defaultShape = TiltedRoundedCornersShape(0f, DefaultCornerRadius.current.medium),
-            pressedShape = TiltedRoundedCornersShape(0f, DefaultCornerRadius.current.full),
+            pressedShape = TiltedRoundedCornersShape(0f, DefaultCornerRadius.current.large),
             defaultBackgroundColor = MaterialTheme.colorScheme.primary,
             pressedBackgroundColor = MaterialTheme.colorScheme.secondary,
             contentColor = MaterialTheme.colorScheme.onPrimary,

@@ -63,7 +63,7 @@ internal fun StartScreen() {
                 icon = Res.drawable.icon_play,
                 contentDescription = Res.string.start_game,
                 defaultShape = TiltedRoundedCornersShape(0f, cornerRadius.medium),
-                pressedShape = TiltedRoundedCornersShape(0f, cornerRadius.full),
+                pressedShape = TiltedRoundedCornersShape(0f, cornerRadius.large),
                 defaultBackgroundColor = MaterialTheme.colorScheme.primary,
                 pressedBackgroundColor = MaterialTheme.colorScheme.secondary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
