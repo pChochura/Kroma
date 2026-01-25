@@ -2,6 +2,7 @@ package com.pointlessgames.kroma.data
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -15,9 +16,19 @@ class SettingsRepository(
     private val appSettings: DataStore<Preferences>,
 ) {
     private val lastHintsUsedKey = stringSetPreferencesKey("last_hints_used")
+    private val tutorialFinishedKey = booleanPreferencesKey("tutorial_finished")
 
-    private fun Set<String>.trimOldest(limit: Int = 10) =
-        this.sortedDescending().take(limit).toSet()
+    suspend fun setTutorialFinished() = withContext(Dispatchers.IO) {
+        appSettings.updateData {
+            it.toMutablePreferences().also { prefs ->
+                prefs[tutorialFinishedKey] = true
+            }
+        }
+    }
+
+    suspend fun isTutorialFinished(): Boolean = withContext(Dispatchers.IO) {
+        appSettings.data.first()[tutorialFinishedKey] ?: false
+    }
 
     suspend fun addLastHintUsed(
         timestamp: Long = Clock.System.now().toEpochMilliseconds(),
@@ -46,6 +57,9 @@ class SettingsRepository(
         val cooldownDuration = (BASE_COOLDOWN * 2.0.pow(timestamps.size - 1)).toLong()
         return@withContext max(0L, timestamps.last() + cooldownDuration - currentTimestamp)
     }
+
+    private fun Set<String>.trimOldest(limit: Int = 10) =
+        this.sortedDescending().take(limit).toSet()
 
     private companion object {
         const val BASE_COOLDOWN = 5 * 1000L // 5 seconds

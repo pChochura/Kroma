@@ -76,7 +76,7 @@ internal fun Tooltip(
             )
         },
         state = state,
-        focusable = state.isPersistent,
+        focusable = false,
         enableUserInput = allowUserInput,
         content = content,
     )

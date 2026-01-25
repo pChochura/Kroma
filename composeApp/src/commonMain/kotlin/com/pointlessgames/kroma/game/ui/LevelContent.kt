@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,6 +34,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpSize
 import com.pointlessgames.kroma.game.GameViewModel
+import com.pointlessgames.kroma.model.Direction
+import com.pointlessgames.kroma.model.LevelData
 import com.pointlessgames.kroma.ui.LocalInnerPadding
 import com.pointlessgames.kroma.ui.TiltedRoundedCornersShape
 import com.pointlessgames.kroma.ui.components.GameGrid
@@ -68,218 +71,284 @@ internal fun LevelContent(
     uiState: GameViewModel.UiState.Loaded,
     viewModel: GameViewModel,
 ) {
-    val spacing = DefaultSpacing.current
-    val cornerRadius = DefaultCornerRadius.current
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .padding(LocalInnerPadding.current),
+            .padding(LocalInnerPadding.current)
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        viewModel.onDrag(dragAmount)
+                    },
+                    onDragEnd = viewModel::onDragEnd,
+                )
+            },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(
-            space = spacing.extraLarge,
+            space = DefaultSpacing.current.extraLarge,
             alignment = Alignment.CenterVertically,
         ),
     ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                ShapeButton(
-                    size = DefaultIconsSize.current.large,
-                    iconSize = DefaultIconsSize.current.small,
-                    icon = Res.drawable.icon_arrow_left,
-                    contentDescription = Res.string.go_back,
-                    defaultShape = TiltedRoundedCornersShape(45f, cornerRadius.medium),
-                    pressedShape = TiltedRoundedCornersShape(0f, cornerRadius.medium),
-                    defaultBackgroundColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                    pressedBackgroundColor = MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    tooltipPosition = Position.BELOW,
-                    onClick = viewModel::onBackClicked,
-                )
-                ShapeButton(
-                    size = DefaultIconsSize.current.large,
-                    iconSize = DefaultIconsSize.current.small,
-                    icon = Res.drawable.icon_question_mark,
-                    contentDescription = Res.string.show_tutorial,
-                    defaultShape = TiltedRoundedCornersShape(-45f, DefaultCornerRadius.current.medium),
-                    pressedShape = TiltedRoundedCornersShape(0f, DefaultCornerRadius.current.medium),
-                    defaultBackgroundColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                    pressedBackgroundColor = MaterialTheme.colorScheme.surfaceVariant,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    tooltipPosition = Position.BELOW,
-                    onClick = {},
-                )
-            }
+        TopBar(
+            level = uiState.level,
+            canMovePreviousLevel = uiState.canMovePreviousLevel,
+            canMoveNextLevel = uiState.canMoveNextLevel,
+            onPreviousLevelClicked = viewModel::onPreviousLevelClicked,
+            onNextLevelClicked = viewModel::onNextLevelClicked,
+            onBackClicked = viewModel::onBackClicked,
+            onTutorialClicked = viewModel::onTutorialClicked,
+        )
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(
-                    space = spacing.medium,
-                    alignment = Alignment.CenterHorizontally,
-                ),
-            ) {
-                IconButton(
-                    isEnabled = uiState.canMovePreviousLevel,
-                    iconRes = Res.drawable.icon_arrow_left,
-                    contentDescription = Res.string.go_to_previous_level,
-                    onClick = viewModel::onPreviousLevelClicked,
-                    position = Position.BELOW,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                AnimatedContent(
-                    targetState = uiState.level + 1,
-                    transitionSpec = {
-                        val direction = if (initialState < targetState) 1 else -1
+        GameBoard(
+            animationMovesForward = uiState.animationMovesForward,
+            levelData = uiState.levelData,
+            possibleMoves = uiState.possibleMoves,
+            onAnimationsFinished = viewModel::onAnimationsFinished,
+        )
 
-                        fadeIn() + slideInHorizontally { direction * it / 2 } togetherWith
-                                fadeOut() + slideOutHorizontally { -direction * it / 2 } using
-                                SizeTransform(false)
-                    },
-                ) {
-                    Text(
-                        text = "$it",
-                        style = MaterialTheme.typography.headlineLarge,
-                        color = MaterialTheme.colorScheme.onSurface,
-                    )
-                }
-                IconButton(
-                    isEnabled = uiState.canMoveNextLevel,
-                    iconRes = Res.drawable.icon_arrow_right,
-                    contentDescription = Res.string.go_to_next_level,
-                    onClick = viewModel::onNextLevelClicked,
-                    position = Position.BELOW,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
+        BottomBar(
+            canUndo = uiState.canUndo,
+            canRedo = uiState.canRedo,
+            canRestart = uiState.canRestart,
+            canHint = uiState.canHint,
+            hintCooldown = uiState.hintCooldown,
+            isLoadingHint = uiState.isLoadingHint,
+            showNoHintsPopup = uiState.showNoHintsPopup,
+            onUndoClicked = viewModel::onUndoClicked,
+            onRedoClicked = viewModel::onRedoClicked,
+            onRestartClicked = viewModel::onRestartClicked,
+            onHintClicked = viewModel::onHintClicked,
+            onNoHintsPopupDismissed = viewModel::onNoHintsPopupDismissed,
+        )
+    }
+}
 
-        BoxWithConstraints(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .pointerInput(Unit) {
-                    detectDragGestures(
-                        onDrag = { change, dragAmount ->
-                            change.consume()
-                            viewModel.onDrag(dragAmount)
-                        },
-                        onDragEnd = viewModel::onDragEnd,
-                    )
-                },
-            contentAlignment = Alignment.Center,
-        ) {
-            AnimatedContent(
-                modifier = Modifier.wrapContentSize(),
-                targetState = uiState,
-                transitionSpec = {
-                    fadeIn() + slideInHorizontally { if (uiState.animationMovesForward) it / 2 else -it / 2 } togetherWith
-                            fadeOut() + slideOutHorizontally { if (uiState.animationMovesForward) -it / 2 else it / 2 }
-                },
-                contentKey = { it.level },
-                contentAlignment = Alignment.Center,
-            ) {
-                GameGrid(
-                    width = it.levelData.width,
-                    height = it.levelData.height,
-                    maxSize = DpSize(
-                        width = this@BoxWithConstraints.maxWidth,
-                        height = this@BoxWithConstraints.maxHeight,
-                    ),
-                    currentPosition = it.levelData.currentPosition,
-                    endingPosition = it.levelData.endingPosition,
-                    possibleMoves = it.possibleMoves,
-                    tiles = it.levelData.tiles,
-                    onAnimationsFinished = viewModel::onAnimationsFinished,
-                )
-            }
-        }
+@Composable
+internal fun TopBar(
+    level: Int,
+    canMovePreviousLevel: Boolean,
+    canMoveNextLevel: Boolean,
+    onPreviousLevelClicked: () -> Unit,
+    onNextLevelClicked: () -> Unit,
+    onBackClicked: () -> Unit,
+    onTutorialClicked: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        ShapeButton(
+            size = DefaultIconsSize.current.large,
+            iconSize = DefaultIconsSize.current.small,
+            icon = Res.drawable.icon_arrow_left,
+            contentDescription = Res.string.go_back,
+            defaultShape = TiltedRoundedCornersShape(45f, DefaultCornerRadius.current.medium),
+            pressedShape = TiltedRoundedCornersShape(0f, DefaultCornerRadius.current.medium),
+            defaultBackgroundColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            pressedBackgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            tooltipPosition = Position.BELOW,
+            onClick = onBackClicked,
+        )
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.weight(1f),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(
-                space = spacing.medium,
+                space = DefaultSpacing.current.medium,
                 alignment = Alignment.CenterHorizontally,
             ),
         ) {
             IconButton(
-                isPulsating = uiState.showNoHintsPopup,
-                isEnabled = uiState.canUndo,
-                iconRes = Res.drawable.icon_undo,
-                contentDescription = Res.string.undo_last_move,
-                onClick = viewModel::onUndoClicked,
+                isEnabled = canMovePreviousLevel,
+                iconRes = Res.drawable.icon_arrow_left,
+                contentDescription = Res.string.go_to_previous_level,
+                onClick = onPreviousLevelClicked,
+                position = Position.BELOW,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            IconButton(
-                isEnabled = uiState.canRedo,
-                iconRes = Res.drawable.icon_redo,
-                contentDescription = Res.string.redo_previous_move,
-                onClick = viewModel::onRedoClicked,
-            )
-            IconButton(
-                isEnabled = uiState.canRestart,
-                iconRes = Res.drawable.icon_restart,
-                contentDescription = Res.string.restart_the_level,
-                onClick = viewModel::onRestartClicked,
-            )
+            AnimatedContent(
+                targetState = level + 1,
+                transitionSpec = {
+                    val direction = if (initialState < targetState) 1 else -1
 
-            val tooltipState = rememberBasicTooltipState(isPersistent = true)
-            LaunchedEffect(uiState.showNoHintsPopup) {
-                if (uiState.showNoHintsPopup) {
-                    tooltipState.show(MutatePriority.UserInput)
-                } else {
-                    tooltipState.dismiss()
-                }
-            }
-            LaunchedEffect(tooltipState.isVisible) {
-                if (!tooltipState.isVisible) {
-                    viewModel.onNoHintsPopupDismissed()
-                }
-            }
-
-            Tooltip(
-                position = Position.ABOVE,
-                contentDescription = Res.string.no_hints_available,
-                allowUserInput = false,
-                state = tooltipState,
+                    fadeIn() + slideInHorizontally { direction * it / 2 } togetherWith
+                            fadeOut() + slideOutHorizontally { -direction * it / 2 } using
+                            SizeTransform(false)
+                },
             ) {
-                Box(contentAlignment = Alignment.BottomCenter) {
-                    IconButton(
-                        isLoading = uiState.isLoadingHint,
-                        isEnabled = uiState.canHint,
-                        iconRes = Res.drawable.icon_lightbulb,
-                        contentDescription = Res.string.show_a_hint,
-                        onClick = viewModel::onHintClicked,
-                    )
+                Text(
+                    text = "$it",
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+            IconButton(
+                isEnabled = canMoveNextLevel,
+                iconRes = Res.drawable.icon_arrow_right,
+                contentDescription = Res.string.go_to_next_level,
+                onClick = onNextLevelClicked,
+                position = Position.BELOW,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
 
-                    AnimatedContent(
-                        modifier = Modifier
-                            .background(
-                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                                shape = MaterialTheme.shapes.small,
-                            ),
-                        targetState = uiState.hintCooldown,
-                        contentAlignment = Alignment.Center,
-                        transitionSpec = {
-                            fadeIn() + slideInVertically { -it / 2 } togetherWith
-                                    fadeOut() + slideOutVertically { it / 2 }
-                        },
-                    ) { cooldown ->
-                        if (cooldown > 0L) {
-                            Text(
-                                modifier = Modifier
-                                    .padding(spacing.extraSmall),
-                                text = cooldown.readableDuration(),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                textAlign = TextAlign.Center,
-                            )
-                        }
+        ShapeButton(
+            size = DefaultIconsSize.current.large,
+            iconSize = DefaultIconsSize.current.small,
+            icon = Res.drawable.icon_question_mark,
+            contentDescription = Res.string.show_tutorial,
+            defaultShape = TiltedRoundedCornersShape(-45f, DefaultCornerRadius.current.medium),
+            pressedShape = TiltedRoundedCornersShape(0f, DefaultCornerRadius.current.medium),
+            defaultBackgroundColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            pressedBackgroundColor = MaterialTheme.colorScheme.surfaceVariant,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            tooltipPosition = Position.BELOW,
+            onClick = onTutorialClicked,
+        )
+    }
+}
+
+@Composable
+internal fun ColumnScope.GameBoard(
+    animationMovesForward: Boolean,
+    levelData: LevelData,
+    possibleMoves: Set<Direction>,
+    onAnimationsFinished: () -> Unit,
+) {
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxWidth()
+            .weight(1f),
+        contentAlignment = Alignment.Center,
+    ) {
+        AnimatedContent(
+            modifier = Modifier.wrapContentSize(),
+            targetState = levelData,
+            transitionSpec = {
+                fadeIn() + slideInHorizontally { if (animationMovesForward) it / 2 else -it / 2 } togetherWith
+                        fadeOut() + slideOutHorizontally { if (animationMovesForward) -it / 2 else it / 2 }
+            },
+            contentKey = { it.id },
+            contentAlignment = Alignment.Center,
+        ) {
+            GameGrid(
+                width = it.width,
+                height = it.height,
+                maxSize = DpSize(
+                    width = this@BoxWithConstraints.maxWidth,
+                    height = this@BoxWithConstraints.maxHeight,
+                ),
+                currentPosition = it.currentPosition,
+                endingPosition = it.endingPosition,
+                possibleMoves = possibleMoves,
+                tiles = it.tiles,
+                onAnimationsFinished = onAnimationsFinished,
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+internal fun BottomBar(
+    canUndo: Boolean,
+    canRedo: Boolean,
+    canRestart: Boolean,
+    canHint: Boolean,
+    hintCooldown: Long,
+    isLoadingHint: Boolean,
+    showNoHintsPopup: Boolean,
+    onUndoClicked: () -> Unit,
+    onRedoClicked: () -> Unit,
+    onRestartClicked: () -> Unit,
+    onHintClicked: () -> Unit,
+    onNoHintsPopupDismissed: () -> Unit,
+) {
+    val spacing = DefaultSpacing.current
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(
+            space = spacing.medium,
+            alignment = Alignment.CenterHorizontally,
+        ),
+    ) {
+        IconButton(
+            isPulsating = showNoHintsPopup,
+            isEnabled = canUndo,
+            iconRes = Res.drawable.icon_undo,
+            contentDescription = Res.string.undo_last_move,
+            onClick = onUndoClicked,
+        )
+        IconButton(
+            isEnabled = canRedo,
+            iconRes = Res.drawable.icon_redo,
+            contentDescription = Res.string.redo_previous_move,
+            onClick = onRedoClicked,
+        )
+        IconButton(
+            isEnabled = canRestart,
+            iconRes = Res.drawable.icon_restart,
+            contentDescription = Res.string.restart_the_level,
+            onClick = onRestartClicked,
+        )
+
+        val tooltipState = rememberBasicTooltipState(isPersistent = true)
+        LaunchedEffect(showNoHintsPopup) {
+            if (showNoHintsPopup) {
+                tooltipState.show(MutatePriority.UserInput)
+            } else {
+                tooltipState.dismiss()
+            }
+        }
+        LaunchedEffect(tooltipState.isVisible) {
+            if (!tooltipState.isVisible) {
+                onNoHintsPopupDismissed()
+            }
+        }
+
+        Tooltip(
+            position = Position.ABOVE,
+            contentDescription = Res.string.no_hints_available,
+            allowUserInput = false,
+            state = tooltipState,
+        ) {
+            Box(contentAlignment = Alignment.BottomCenter) {
+                IconButton(
+                    isLoading = isLoadingHint,
+                    isEnabled = canHint,
+                    iconRes = Res.drawable.icon_lightbulb,
+                    contentDescription = Res.string.show_a_hint,
+                    onClick = onHintClicked,
+                )
+
+                AnimatedContent(
+                    modifier = Modifier
+                        .background(
+                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            shape = MaterialTheme.shapes.small,
+                        ),
+                    targetState = hintCooldown,
+                    contentAlignment = Alignment.Center,
+                    transitionSpec = {
+                        fadeIn() + slideInVertically { -it / 2 } togetherWith
+                                fadeOut() + slideOutVertically { it / 2 }
+                    },
+                ) { cooldown ->
+                    if (cooldown > 0L) {
+                        Text(
+                            modifier = Modifier
+                                .padding(spacing.extraSmall),
+                            text = cooldown.readableDuration(),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                        )
                     }
                 }
             }

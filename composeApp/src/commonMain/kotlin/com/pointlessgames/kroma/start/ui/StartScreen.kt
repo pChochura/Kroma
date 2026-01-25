@@ -12,13 +12,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.pointlessgames.kroma.LocalNavigator
 import com.pointlessgames.kroma.model.GridTile
+import com.pointlessgames.kroma.start.StartViewModel
 import com.pointlessgames.kroma.ui.LocalInnerPadding
 import com.pointlessgames.kroma.ui.TiltedRoundedCornersShape
 import com.pointlessgames.kroma.ui.components.ShapeButton
@@ -36,11 +39,15 @@ import kroma.composeapp.generated.resources.start_game
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-internal fun StartScreen() {
+internal fun StartScreen(
+    viewModel: StartViewModel,
+) {
     val navigator = LocalNavigator.current
     val spacing = DefaultSpacing.current
     val iconsSizes = DefaultIconsSize.current
     val cornerRadius = DefaultCornerRadius.current
+
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Box(
         modifier = Modifier
@@ -67,7 +74,11 @@ internal fun StartScreen() {
                 defaultBackgroundColor = MaterialTheme.colorScheme.primary,
                 pressedBackgroundColor = MaterialTheme.colorScheme.secondary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
-                onClick = navigator::navigateToGame,
+                onClick = if (uiState.isTutorialFinished) {
+                    navigator::navigateToGame
+                } else {
+                    navigator::navigateToTutorial
+                },
             )
 
             Text(

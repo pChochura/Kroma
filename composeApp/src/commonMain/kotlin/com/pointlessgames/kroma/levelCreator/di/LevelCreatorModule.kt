@@ -7,6 +7,7 @@ import com.pointlessgames.kroma.levelCreator.ui.LevelCreatorScreen
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.core.module.dsl.viewModelOf
+import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
 
@@ -23,7 +24,9 @@ internal val levelCreatorModule = module {
     navigation<Route.TestLevel> {
         TestLevelScreen(
             levelData = it.levelData,
-            viewModel = koinViewModel(),
+            viewModel = koinViewModel {
+                parametersOf(true)
+            },
         )
     }
 }

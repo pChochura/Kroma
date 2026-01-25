@@ -29,6 +29,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 internal class GameViewModel(
+    private val isTestLevel: Boolean,
     private val levelRepository: LevelRepository,
     private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
@@ -99,7 +100,6 @@ internal class GameViewModel(
         _uiState.update {
             loadedState.copy(
                 level = loadedState.level + 1,
-                levelData = levelData,
 
                 canMovePreviousLevel = loadedState.level + 1 > 0,
                 canMoveNextLevel = loadedState.level + 1 < firstUnfinishedLevelIndex,
@@ -120,7 +120,6 @@ internal class GameViewModel(
         _uiState.update {
             loadedState.copy(
                 level = loadedState.level - 1,
-                levelData = levelData,
 
                 canMovePreviousLevel = loadedState.level - 1 > 0,
                 canMoveNextLevel = loadedState.level - 1 < firstUnfinishedLevelIndex,
@@ -153,6 +152,15 @@ internal class GameViewModel(
     }
 
     private fun calculateHintCooldown() {
+        if (isTestLevel) {
+            return _uiState.update {
+                loadedState.copy(
+                    hintCooldown = 0L,
+                    canHint = true,
+                )
+            }
+        }
+
         viewModelScope.launch {
             val cooldownInMilliseconds = settingsRepository.getCooldownUntilNextHint()
             val cooldown = cooldownInMilliseconds.milliseconds.inWholeSeconds
@@ -323,6 +331,16 @@ internal class GameViewModel(
         eventChannel.trySend(Event.GoBack)
     }
 
+    fun onTutorialClicked() {
+        eventChannel.trySend(Event.ShowTutorial)
+    }
+
+    override fun onCleared() {
+        currentAsyncJob?.cancel()
+        cooldownTimerJob?.cancel()
+        super.onCleared()
+    }
+
     sealed class UiState {
         data class Loaded(
             val levels: List<LevelData>,
@@ -355,5 +373,6 @@ internal class GameViewModel(
     sealed interface Event {
         data object GameFinished : Event
         data object GoBack : Event
+        data object ShowTutorial : Event
     }
 }

@@ -14,6 +14,7 @@ import com.pointlessgames.kroma.LocalNavigator
 import com.pointlessgames.kroma.game.GameViewModel
 import com.pointlessgames.kroma.game.GameViewModel.Event.GameFinished
 import com.pointlessgames.kroma.game.GameViewModel.Event.GoBack
+import com.pointlessgames.kroma.game.GameViewModel.Event.ShowTutorial
 import com.pointlessgames.kroma.ui.components.InlineLoader
 import kotlinx.coroutines.launch
 
@@ -30,6 +31,7 @@ internal fun GameScreen(viewModel: GameViewModel) {
                 when (it) {
                     is GoBack -> navigator.navigateBack()
                     is GameFinished -> navigator.navigateToFinishedGame()
+                    is ShowTutorial -> navigator.navigateToTutorial()
                 }
             }
         }

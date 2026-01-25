@@ -31,4 +31,11 @@
     <string name="width">Width</string>
     <string name="height">Height</string>
     <string name="no_hints_available">No hints available\nTry undoing moves</string>
+    <string name="need_a_hint">Need a hint?</string>
+
+    <!-- Tutorial -->
+    <string name="tutorial_1">Swipe across the screen to move</string>
+    <string name="tutorial_2">The adjacent tile will change color</string>
+    <string name="tutorial_3">Paint the empty tiles across</string>
+    <string name="tutorial_4">Move only onto a tile with a different color</string>
 </resources>
