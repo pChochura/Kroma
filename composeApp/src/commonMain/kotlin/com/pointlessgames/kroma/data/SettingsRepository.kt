@@ -16,7 +16,7 @@ class SettingsRepository(
 ) {
     private val lastHintsUsedKey = stringSetPreferencesKey("last_hints_used")
 
-    private fun Set<String>.trimLatest(limit: Int = 10) =
+    private fun Set<String>.trimOldest(limit: Int = 10) =
         this.sortedDescending().take(limit).toSet()
 
     suspend fun addLastHintUsed(
@@ -25,7 +25,7 @@ class SettingsRepository(
         appSettings.updateData {
             it.toMutablePreferences().also { prefs ->
                 prefs[lastHintsUsedKey] =
-                    (prefs[lastHintsUsedKey].orEmpty() + timestamp.toString()).trimLatest(10)
+                    (prefs[lastHintsUsedKey].orEmpty() + timestamp.toString()).trimOldest(10)
             }
         }
     }
