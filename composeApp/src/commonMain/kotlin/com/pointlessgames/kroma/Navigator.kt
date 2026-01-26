@@ -116,6 +116,13 @@ internal class Navigator(private val backStack: NavBackStack<NavKey>) {
     fun navigateToTutorial() {
         backStack.add(Route.Tutorial)
     }
+
+    fun navigateBackFromTutorial() {
+        backStack.removeLast()
+        if (backStack.last() != Route.Game) {
+            backStack.add(Route.Game)
+        }
+    }
 }
 
 internal val LocalNavigator: ProvidableCompositionLocal<Navigator> =

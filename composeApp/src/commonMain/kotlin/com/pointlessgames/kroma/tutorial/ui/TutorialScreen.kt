@@ -86,7 +86,7 @@ internal fun TutorialScreen(
         coroutineScope.launch {
             viewModel.events.collect {
                 when (it) {
-                    is GoBack -> navigator.navigateBack()
+                    is GoBack -> navigator.navigateBackFromTutorial()
                 }
             }
         }
