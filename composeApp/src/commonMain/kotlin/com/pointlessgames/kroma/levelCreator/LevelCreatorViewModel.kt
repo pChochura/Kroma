@@ -37,7 +37,12 @@ internal class LevelCreatorViewModel(
         val nextTile = currentTile.copy(
             value = currentTile.value.next(MIN_VALUE, MAX_VALUE),
         )
-        _uiState.update { it.copy(gridTiles = it.gridTiles + (position to nextTile)) }
+
+        if (nextTile.value == GridTile.Empty.value) {
+            _uiState.update { it.copy(gridTiles = it.gridTiles - position) }
+        } else {
+            _uiState.update { it.copy(gridTiles = it.gridTiles + (position to nextTile)) }
+        }
     }
 
     fun onStartChanged(position: Position?) {
