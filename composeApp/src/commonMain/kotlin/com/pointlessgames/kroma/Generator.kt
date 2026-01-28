@@ -10,6 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
+import kotlin.math.pow
 import kotlin.random.Random
 
 internal object Generator {
@@ -17,14 +18,15 @@ internal object Generator {
     private val random = Random(Random.nextInt())
 
     // --- EVOLUTIONARY ALGORITHM PARAMETERS ---
-    private const val POPULATION_SIZE = 50
-    private const val MAX_GENERATIONS = 100
-    private const val MIN_MOVES_COMPLEXITY = 8 // Target fitness (complexity)
+    private const val POPULATION_SIZE = 500
+    private const val MAX_GENERATIONS = 300
     private const val MUTATION_RATE = 0.4 // 40% chance to mutate a new child
     private const val ELITISM_COUNT = 2 // Automatically keep the top 2 fittest levels
 
     suspend fun generate(width: Int, height: Int): LevelData? = withContext(Dispatchers.Default) {
         runCatching {
+            val complexity = (5 + 1.15.pow(width * height / 2)).coerceAtMost(20.0).toInt()
+
             // 1. INITIALIZATION: Create an initial population of random levels.
             var population = (1..POPULATION_SIZE).map { createRandomInitialLevel(width, height) }
 
@@ -38,7 +40,7 @@ internal object Generator {
                 val bestInGeneration = scoredPopulation.first()
 
                 // Check for termination condition: If the best level is complex enough, we're done.
-                if (bestInGeneration.second >= MIN_MOVES_COMPLEXITY) {
+                if (bestInGeneration.second >= complexity) {
                     println("Found suitable level in generation $generation.")
                     return@withContext pruneUntouchedTiles(bestInGeneration.first)
                 }
