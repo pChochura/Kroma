@@ -88,18 +88,21 @@ internal class LevelCreatorViewModel(
             val generatedLevelData = Generator.generate(
                 width = uiState.value.width,
                 height = uiState.value.height,
-            ) ?: return@launch
+            )
 
-            _uiState.update {
-                it.copy(
-                    width = generatedLevelData.width,
-                    height = generatedLevelData.height,
-                    startingPosition = generatedLevelData.currentPosition,
-                    endingPosition = generatedLevelData.endingPosition,
-                    gridTiles = generatedLevelData.tiles,
-                    isGenerating = false,
-                )
+            if (generatedLevelData != null) {
+                _uiState.update {
+                    it.copy(
+                        width = generatedLevelData.width,
+                        height = generatedLevelData.height,
+                        startingPosition = generatedLevelData.currentPosition,
+                        endingPosition = generatedLevelData.endingPosition,
+                        gridTiles = generatedLevelData.tiles,
+                    )
+                }
             }
+
+            _uiState.update { it.copy(isGenerating = false) }
         }
     }
 
