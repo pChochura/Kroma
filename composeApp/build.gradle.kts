@@ -51,6 +51,7 @@ kotlin {
             implementation(libs.androidx.constraint.layout)
             implementation(libs.kotlinx.coroutines.core)
             implementation(libs.kotlinx.json.serialization)
+            implementation(libs.kotlinx.datetime)
 
             implementation(libs.androidx.room.runtime)
             implementation(libs.androidx.sqlite.bundled)

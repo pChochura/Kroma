@@ -121,7 +121,7 @@ internal fun StartScreen(
                 defaultBackgroundColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                 pressedBackgroundColor = MaterialTheme.colorScheme.surfaceVariant,
                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                onClick = navigator::navigateToLevelCreator,
+                onClick = navigator::navigateToDailyChallenge,
             )
         }
     }

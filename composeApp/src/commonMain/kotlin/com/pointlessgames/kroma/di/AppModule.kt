@@ -1,5 +1,6 @@
 package com.pointlessgames.kroma.di
 
+import com.pointlessgames.kroma.dailyChallenge.di.dailyChallengeModule
 import com.pointlessgames.kroma.data.di.dataModule
 import com.pointlessgames.kroma.game.di.gameModule
 import com.pointlessgames.kroma.levelCreator.di.levelCreatorModule
@@ -17,6 +18,7 @@ internal val appModule = module {
     includes(gameModule)
     includes(tutorialModule)
     includes(levelCreatorModule)
+    includes(dailyChallengeModule)
 }
 
 fun initKoin(config: KoinAppDeclaration = {}) = startKoin {

@@ -1,5 +1,8 @@
 package com.pointlessgames.kroma.utils
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.ui.draw.CacheDrawScope
@@ -7,6 +10,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.LayoutDirection
 import com.pointlessgames.kroma.model.GridTile
 
 internal fun CornerSize.toCornerRadius(size: Size, density: Float) =
@@ -29,3 +33,12 @@ internal fun Int.next(min: Int, max: Int, n: Int = 1): Int = (this - min + n) % 
 
 internal val GridTile?.isAllowed: Boolean
     get() = this == null || this.value >= 0
+
+internal operator fun PaddingValues.plus(other: PaddingValues) = PaddingValues(
+    start = this.calculateStartPadding(LayoutDirection.Ltr) +
+            other.calculateStartPadding(LayoutDirection.Ltr),
+    top = this.calculateTopPadding() + other.calculateTopPadding(),
+    end = this.calculateEndPadding(LayoutDirection.Ltr) +
+            other.calculateEndPadding(LayoutDirection.Ltr),
+    bottom = this.calculateBottomPadding() + other.calculateBottomPadding(),
+)

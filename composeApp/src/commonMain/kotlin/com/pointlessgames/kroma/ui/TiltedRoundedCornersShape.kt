@@ -103,7 +103,7 @@ fun TiltedRoundedCornersShape(rotation: Float, size: Float) =
 /**
  * Creates [TiltedRoundedCornersShape] with the same size applied for all four corners.
  *
- * @param percent Size in percents to apply.
+ * @param size Size in percents to apply.
  */
-fun TiltedRoundedCornersShape(rotation: Float, percent: Int) =
-    TiltedRoundedCornersShape(rotation, CornerSize(percent))
+fun TiltedRoundedCornersShape(rotation: Float, size: Int) =
+    TiltedRoundedCornersShape(rotation, CornerSize(size))

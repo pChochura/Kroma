@@ -1,12 +1,16 @@
 package com.pointlessgames.kroma
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.safeContent
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -14,7 +18,14 @@ import androidx.compose.ui.unit.sp
 import com.pointlessgames.kroma.ui.LocalInnerPadding
 import com.pointlessgames.kroma.ui.theme.DefaultColors
 import com.pointlessgames.kroma.ui.theme.DefaultCornerRadius
+import com.pointlessgames.kroma.ui.theme.DefaultSpacing
+import com.pointlessgames.kroma.utils.LocalResultEventBus
+import com.pointlessgames.kroma.utils.ResultEventBus
+import com.pointlessgames.kroma.utils.plus
+import eu.iamkonstantin.kotlin.gadulka.GadulkaPlayer
+import eu.iamkonstantin.kotlin.gadulka.rememberGadulkaState
 import kroma.composeapp.generated.resources.Poppins_Bold
+import kroma.composeapp.generated.resources.Poppins_Medium
 import kroma.composeapp.generated.resources.Poppins_Regular
 import kroma.composeapp.generated.resources.Res
 import org.jetbrains.compose.resources.Font
@@ -26,6 +37,7 @@ fun App() {
     val fontFamily = FontFamily(
         Font(Res.font.Poppins_Bold, FontWeight.Bold),
         Font(Res.font.Poppins_Regular, FontWeight.Normal),
+        Font(Res.font.Poppins_Medium, FontWeight.Medium),
     )
 
     val colors = DefaultColors.current
@@ -89,10 +101,23 @@ fun App() {
             ),
         ),
     ) {
-        Scaffold(contentWindowInsets = WindowInsets.safeContent) { innerPadding ->
-            CompositionLocalProvider(LocalInnerPadding provides innerPadding) {
+        Scaffold(
+            contentWindowInsets = WindowInsets.systemBars,
+        ) { innerPadding ->
+            val spacing = DefaultSpacing.current
+            CompositionLocalProvider(
+                LocalInnerPadding provides remember {
+                    PaddingValues(spacing.extraLarge) + innerPadding
+                },
+                LocalMediaPlayer provides rememberGadulkaState(),
+                LocalResultEventBus provides remember { ResultEventBus() },
+            ) {
                 Navigator(Route.Start)
             }
         }
     }
+}
+
+val LocalMediaPlayer: ProvidableCompositionLocal<GadulkaPlayer> = staticCompositionLocalOf {
+    error("LocalMediaPlayer not provided")
 }

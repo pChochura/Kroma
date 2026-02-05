@@ -17,10 +17,16 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.layout.Measurable
+import androidx.compose.ui.layout.MeasureResult
+import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.node.DrawModifierNode
+import androidx.compose.ui.node.LayoutModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
 import androidx.compose.ui.node.PointerInputModifierNode
+import androidx.compose.ui.node.invalidateMeasurement
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.IntSize
 import com.pointlessgames.kroma.utils.defaultAnimationSpecFloat
 import com.pointlessgames.kroma.utils.defaultAnimationSpecOffset
@@ -107,6 +113,7 @@ private class DragIndicationNode(
     var dragForce: Float,
 ) : Modifier.Node(),
     PointerInputModifierNode,
+    LayoutModifierNode,
     DrawModifierNode {
 
     private val animatedDragOffset = Animatable(Offset.Zero, Offset.VectorConverter)
@@ -124,6 +131,7 @@ private class DragIndicationNode(
             when (pointerEvent.type) {
                 PointerEventType.Press -> {
                     initialPointerPosition = it.position
+                    invalidateMeasurement()
                     coroutineScope.launch {
                         launch { animatedDragOffset.stop() }
                         launch { animatedScale.animateTo(1.1f, defaultAnimationSpecFloat) }
@@ -155,6 +163,7 @@ private class DragIndicationNode(
             launch { animatedDragOffset.animateTo(Offset.Zero, defaultAnimationSpecOffset) }
             launch { animatedScale.animateTo(1f, defaultAnimationSpecFloat) }
         }
+        invalidateMeasurement()
     }
 
     override fun ContentDrawScope.draw() {
@@ -179,6 +188,20 @@ private class DragIndicationNode(
                 )
             }
             this@draw.drawContent()
+        }
+    }
+
+    override fun MeasureScope.measure(
+        measurable: Measurable,
+        constraints: Constraints,
+    ): MeasureResult {
+        val placeable = measurable.measure(constraints)
+        return layout(placeable.width, placeable.height) {
+            placeable.place(
+                x = 0,
+                y = 0,
+                zIndex = if (initialPointerPosition != null) 10f else 0f,
+            )
         }
     }
 }

@@ -17,6 +17,25 @@ class SettingsRepository(
 ) {
     private val lastHintsUsedKey = stringSetPreferencesKey("last_hints_used")
     private val tutorialFinishedKey = booleanPreferencesKey("tutorial_finished")
+    private val dailyChallengeLevelsFinishedKey =
+        stringSetPreferencesKey("daily_challenge_levels_finished")
+
+    suspend fun addDailyChallengeLevelFinished(id: Long) = withContext(Dispatchers.IO) {
+        appSettings.updateData {
+            it.toMutablePreferences().also { prefs ->
+                prefs[dailyChallengeLevelsFinishedKey] =
+                    prefs[dailyChallengeLevelsFinishedKey].orEmpty() + id.toString()
+            }
+        }
+    }
+
+    suspend fun areDailyChallengeLevelsFinished(ids: List<Long>): Map<Long, Boolean> =
+        withContext(Dispatchers.IO) {
+            val finishedIds = appSettings.data.first()[dailyChallengeLevelsFinishedKey]
+                ?: return@withContext emptyMap()
+
+            ids.associateWith { it.toString() in finishedIds }
+        }
 
     suspend fun setTutorialFinished() = withContext(Dispatchers.IO) {
         appSettings.updateData {

@@ -28,13 +28,14 @@ internal fun Button(
     defaultBackgroundColor: Color,
     pressedBackgroundColor: Color,
     contentColor: Color,
+    modifier: Modifier = Modifier,
     isLoading: Boolean = false,
     onClick: () -> Unit,
 ) {
     val spacing = DefaultSpacing.current
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .dragIndication()
             .clickable(
                 onClick = onClick,
@@ -51,7 +52,10 @@ internal fun Button(
                 horizontal = spacing.medium,
                 vertical = spacing.small,
             ),
-        horizontalArrangement = Arrangement.spacedBy(spacing.extraSmall),
+        horizontalArrangement = Arrangement.spacedBy(
+            space = spacing.extraSmall,
+            alignment = Alignment.CenterHorizontally,
+        ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         LoadingIcon(

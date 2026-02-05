@@ -40,6 +40,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.times
+import com.pointlessgames.kroma.LocalMediaPlayer
 import com.pointlessgames.kroma.model.Direction
 import com.pointlessgames.kroma.model.Direction.BOTTOM
 import com.pointlessgames.kroma.model.Direction.LEFT
@@ -49,7 +50,6 @@ import com.pointlessgames.kroma.model.GridTile
 import com.pointlessgames.kroma.model.Position
 import com.pointlessgames.kroma.ui.theme.DefaultSpacing
 import com.pointlessgames.kroma.utils.filledRoundedRect
-import eu.iamkonstantin.kotlin.gadulka.rememberGadulkaState
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kroma.composeapp.generated.resources.Res
@@ -205,7 +205,7 @@ private fun GridTile(
     onLongClicked: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
-    val gadulka = rememberGadulkaState()
+    val mediaPlayer = LocalMediaPlayer.current
     val coroutineScope = rememberCoroutineScope()
 
     var previousShowDirection by remember { mutableStateOf<Direction?>(null) }
@@ -223,7 +223,7 @@ private fun GridTile(
         previousShowDirection?.let {
             coroutineScope.launch {
                 delay(gridTile.animationOffset.toLong())
-                gadulka.play(Res.getUri("files/tile_turned_01.wav"))
+                mediaPlayer.play(Res.getUri("files/tile_turned_01.wav"))
             }
 
             animateShowByDirection(

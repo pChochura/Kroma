@@ -32,6 +32,11 @@
     <string name="height">Height</string>
     <string name="no_hints_available">No hints available\nTry undoing moves</string>
     <string name="need_a_hint">Need a hint?</string>
+    <string name="daily_challenge">Daily\nchallenge</string>
+    <string name="easy">Easy</string>
+    <string name="medium">Medium</string>
+    <string name="hard">Hard</string>
+    <string name="today">Today</string>
 
     <!-- Tutorial -->
     <string name="tutorial_1">Swipe across the screen to move</string>

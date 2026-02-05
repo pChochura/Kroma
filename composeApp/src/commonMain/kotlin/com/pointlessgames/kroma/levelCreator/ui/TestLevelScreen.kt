@@ -1,4 +1,4 @@
-package com.pointlessgames.kroma.game.ui
+package com.pointlessgames.kroma.levelCreator.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,15 +15,21 @@ import com.pointlessgames.kroma.game.GameViewModel
 import com.pointlessgames.kroma.game.GameViewModel.Event.GameFinished
 import com.pointlessgames.kroma.game.GameViewModel.Event.GoBack
 import com.pointlessgames.kroma.game.GameViewModel.Event.ShowTutorial
+import com.pointlessgames.kroma.game.ui.LevelContent
+import com.pointlessgames.kroma.model.FinishableLevelData
 import com.pointlessgames.kroma.model.LevelData
 import com.pointlessgames.kroma.ui.components.InlineLoader
+import com.pointlessgames.kroma.utils.LocalResultEventBus
 import kotlinx.coroutines.launch
+
+internal const val LEVEL_FINISHED_RESULT_KEY = "level_finished"
 
 @Composable
 internal fun TestLevelScreen(
     levelData: LevelData,
     viewModel: GameViewModel,
 ) {
+    val resultEventBus = LocalResultEventBus.current
     val navigator = LocalNavigator.current
 
     val coroutineScope = rememberCoroutineScope()
@@ -33,8 +39,28 @@ internal fun TestLevelScreen(
         coroutineScope.launch {
             viewModel.events.collect {
                 when (it) {
-                    is GameFinished -> navigator.navigateBackFromTestLevel()
-                    is GoBack -> navigator.navigateBack()
+                    is GameFinished -> {
+                        resultEventBus.sendResult(
+                            resultKey = LEVEL_FINISHED_RESULT_KEY,
+                            result = FinishableLevelData(
+                                levelData = levelData,
+                                isFinished = true,
+                            ),
+                        )
+                        navigator.navigateBackFromTestLevel()
+                    }
+
+                    is GoBack -> {
+                        resultEventBus.sendResult(
+                            resultKey = LEVEL_FINISHED_RESULT_KEY,
+                            result = FinishableLevelData(
+                                levelData = levelData,
+                                isFinished = false,
+                            ),
+                        )
+                        navigator.navigateBack()
+                    }
+
                     is ShowTutorial -> navigator.navigateToTutorial()
                 }
             }
@@ -44,7 +70,7 @@ internal fun TestLevelScreen(
     }
 
     LaunchedEffect(levelData) {
-        viewModel.loadLevels(listOf(levelData))
+        viewModel.loadLevels(listOf(levelData), isTestLevel = true)
     }
 
     when (val state = uiState) {

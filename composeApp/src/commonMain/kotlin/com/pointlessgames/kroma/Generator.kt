@@ -16,7 +16,7 @@ import kotlin.time.Duration.Companion.seconds
 
 internal object Generator {
 
-    private val random = Random(Random.nextInt())
+    private var random = Random(Random.nextInt())
 
     // --- EVOLUTIONARY ALGORITHM PARAMETERS ---
     private const val POPULATION_SIZE = 500
@@ -24,7 +24,14 @@ internal object Generator {
     private const val MUTATION_RATE = 0.5
     private const val ELITISM_COUNT = 3
 
-    suspend fun generate(width: Int, height: Int): LevelData? = withContext(Dispatchers.Default) {
+    fun setSeed(seed: Long) {
+        random = Random(seed)
+    }
+
+    suspend fun generate(
+        width: Int = random.nextInt(3, 7),
+        height: Int = random.nextInt(3, 7),
+    ): LevelData? = withContext(Dispatchers.Default) {
         repeat(3) {
             val result = withTimeoutOrNull(1.seconds) {
                 internalGenerate(width, height)
@@ -108,6 +115,7 @@ internal object Generator {
         )
 
         return toLevelData(
+            id = level.id,
             width = level.width,
             height = level.height,
             tiles = modifiedTiles,
@@ -183,7 +191,7 @@ internal object Generator {
         val startPos = availablePos.random(random)
         val endPos = (availablePos - startPos).random(random)
 
-        return toLevelData(width, height, tiles, startPos, endPos)
+        return toLevelData(random.nextLong(), width, height, tiles, startPos, endPos)
     }
 
     private fun modifyTiles(
@@ -228,12 +236,14 @@ internal object Generator {
     }
 
     private fun toLevelData(
+        id: Long,
         width: Int,
         height: Int,
         tiles: Map<Position, Int>,
         currentPosition: Position,
         endingPosition: Position = Position(-1, -1),
     ) = LevelData(
+        id = id,
         width = width,
         height = height,
         tiles = tiles.mapValues { GridTile(it.value) },

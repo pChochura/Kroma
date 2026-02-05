@@ -35,6 +35,9 @@ internal sealed interface Route : NavKey {
 
     @Serializable
     data object LevelCreator : Route
+
+    @Serializable
+    data object DailyChallenge : Route
 }
 
 private val navigationConfig = SavedStateConfiguration {
@@ -45,6 +48,7 @@ private val navigationConfig = SavedStateConfiguration {
             subclass(Route.Tutorial::class, Route.Tutorial.serializer())
             subclass(Route.TestLevel::class, Route.TestLevel.serializer())
             subclass(Route.LevelCreator::class, Route.LevelCreator.serializer())
+            subclass(Route.DailyChallenge::class, Route.DailyChallenge.serializer())
         }
     }
 }
@@ -103,6 +107,10 @@ internal class Navigator(private val backStack: NavBackStack<NavKey>) {
 
     fun navigateToLevelCreator() {
         backStack.add(Route.LevelCreator)
+    }
+
+    fun navigateToDailyChallenge() {
+        backStack.add(Route.DailyChallenge)
     }
 
     fun navigateToGame() {

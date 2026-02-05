@@ -29,7 +29,6 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 internal class GameViewModel(
-    private val isTestLevel: Boolean,
     private val levelRepository: LevelRepository,
     private val settingsRepository: SettingsRepository,
 ) : ViewModel() {
@@ -46,6 +45,8 @@ internal class GameViewModel(
     private val loadedState: UiState.Loaded
         get() = uiState.value as UiState.Loaded
 
+    private var isTestLevel: Boolean = false
+
     private var firstUnfinishedLevelId: Long? = null
     private var swipeAngle = 0.0
 
@@ -56,11 +57,12 @@ internal class GameViewModel(
         currentAsyncJob?.cancel()
         currentAsyncJob = viewModelScope.launch {
             val levels = levelRepository.getLevels()
-            loadLevels(levels)
+            loadLevels(levels, isTestLevel = false)
         }
     }
 
-    fun loadLevels(levels: List<LevelData>) {
+    fun loadLevels(levels: List<LevelData>, isTestLevel: Boolean) {
+        this.isTestLevel = isTestLevel
         currentAsyncJob?.cancel()
         currentAsyncJob = viewModelScope.launch {
             firstUnfinishedLevelId = levelRepository.getFirstUnfinishedLevelId()
@@ -308,7 +310,9 @@ internal class GameViewModel(
                 ),
             )
 
-            settingsRepository.addLastHintUsed()
+            if (!isTestLevel) {
+                settingsRepository.addLastHintUsed()
+            }
             calculateHintCooldown()
         }
     }
