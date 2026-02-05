@@ -27,5 +27,5 @@ interface LevelDao {
     suspend fun markAsFinished(id: Long)
 
     @Query("SELECT id FROM levels WHERE isFinished = 0 ORDER BY id ASC LIMIT 1")
-    suspend fun getFirstUnfinishedLevelId(): Long
+    suspend fun getFirstUnfinishedLevelId(): Long?
 }

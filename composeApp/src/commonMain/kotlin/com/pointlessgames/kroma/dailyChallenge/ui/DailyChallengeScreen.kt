@@ -142,7 +142,7 @@ internal fun DailyChallengeScreen(viewModel: DailyChallengeViewModel) {
                     else -> stringResource(Res.string.hard)
                 },
                 items = levels.map(FinishableLevelData::isFinished),
-                onItemClicked = { navigator.navigateToTestLevel(levels[it].levelData) },
+                onItemClicked = { navigator.navigateToLevel(levels[it].levelData) },
             )
         }
     }

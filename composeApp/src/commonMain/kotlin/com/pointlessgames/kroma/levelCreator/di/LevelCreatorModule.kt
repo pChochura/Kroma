@@ -1,9 +1,9 @@
 package com.pointlessgames.kroma.levelCreator.di
 
 import com.pointlessgames.kroma.Route
-import com.pointlessgames.kroma.levelCreator.ui.TestLevelScreen
 import com.pointlessgames.kroma.levelCreator.LevelCreatorViewModel
 import com.pointlessgames.kroma.levelCreator.ui.LevelCreatorScreen
+import com.pointlessgames.kroma.levelCreator.ui.TestLevelScreen
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 import org.koin.core.module.dsl.viewModelOf
@@ -20,9 +20,10 @@ internal val levelCreatorModule = module {
         )
     }
 
-    navigation<Route.TestLevel> {
+    navigation<Route.Level> {
         TestLevelScreen(
             levelData = it.levelData,
+            isTestLevel = it.isTestLevel,
             viewModel = koinViewModel(),
         )
     }

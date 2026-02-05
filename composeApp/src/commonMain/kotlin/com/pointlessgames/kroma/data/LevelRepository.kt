@@ -48,7 +48,7 @@ internal class LevelRepository(
         levelDao.markAsFinished(id)
     }
 
-    suspend fun getFirstUnfinishedLevelId(): Long = withContext(Dispatchers.IO) {
+    suspend fun getFirstUnfinishedLevelId(): Long? = withContext(Dispatchers.IO) {
         levelDao.getFirstUnfinishedLevelId()
     }
 }

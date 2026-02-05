@@ -27,6 +27,7 @@ internal const val LEVEL_FINISHED_RESULT_KEY = "level_finished"
 @Composable
 internal fun TestLevelScreen(
     levelData: LevelData,
+    isTestLevel: Boolean,
     viewModel: GameViewModel,
 ) {
     val resultEventBus = LocalResultEventBus.current
@@ -69,8 +70,8 @@ internal fun TestLevelScreen(
         onPauseOrDispose { }
     }
 
-    LaunchedEffect(levelData) {
-        viewModel.loadLevels(listOf(levelData), isTestLevel = true)
+    LaunchedEffect(levelData, isTestLevel) {
+        viewModel.loadLevels(listOf(levelData), isTestLevel = isTestLevel)
     }
 
     when (val state = uiState) {

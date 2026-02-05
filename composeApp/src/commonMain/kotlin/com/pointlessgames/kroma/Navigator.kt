@@ -31,7 +31,7 @@ internal sealed interface Route : NavKey {
     data object Tutorial : Route
 
     @Serializable
-    data class TestLevel(val levelData: LevelData) : Route
+    data class Level(val levelData: LevelData, val isTestLevel: Boolean) : Route
 
     @Serializable
     data object LevelCreator : Route
@@ -46,7 +46,7 @@ private val navigationConfig = SavedStateConfiguration {
             subclass(Route.Start::class, Route.Start.serializer())
             subclass(Route.Game::class, Route.Game.serializer())
             subclass(Route.Tutorial::class, Route.Tutorial.serializer())
-            subclass(Route.TestLevel::class, Route.TestLevel.serializer())
+            subclass(Route.Level::class, Route.Level.serializer())
             subclass(Route.LevelCreator::class, Route.LevelCreator.serializer())
             subclass(Route.DailyChallenge::class, Route.DailyChallenge.serializer())
         }
@@ -92,8 +92,12 @@ internal fun Navigator(
 }
 
 internal class Navigator(private val backStack: NavBackStack<NavKey>) {
+    fun navigateToLevel(levelData: LevelData) {
+        backStack.add(Route.Level(levelData, isTestLevel = false))
+    }
+
     fun navigateToTestLevel(levelData: LevelData) {
-        backStack.add(Route.TestLevel(levelData))
+        backStack.add(Route.Level(levelData, isTestLevel = true))
     }
 
     fun navigateBackFromTestLevel() {

@@ -53,46 +53,41 @@ internal class GameViewModel(
     private var currentAsyncJob: Job? = null
     private var cooldownTimerJob: Job? = null
 
-    fun loadStoredLevels() {
-        currentAsyncJob?.cancel()
-        currentAsyncJob = viewModelScope.launch {
-            val levels = levelRepository.getLevels()
-            loadLevels(levels, isTestLevel = false)
-        }
+    suspend fun loadStoredLevels() {
+        val levels = levelRepository.getLevels()
+        loadLevels(levels, isTestLevel = false)
     }
 
-    fun loadLevels(levels: List<LevelData>, isTestLevel: Boolean) {
+    suspend fun loadLevels(levels: List<LevelData>, isTestLevel: Boolean) {
         this.isTestLevel = isTestLevel
-        currentAsyncJob?.cancel()
-        currentAsyncJob = viewModelScope.launch {
-            firstUnfinishedLevelId = levelRepository.getFirstUnfinishedLevelId()
-            val firstUnfinishedLevelIndex = levels
-                .indexOfFirst { it.id == firstUnfinishedLevelId }
-                .takeIf { it != -1 } ?: 0
+        firstUnfinishedLevelId = levelRepository.getFirstUnfinishedLevelId()
+        val firstUnfinishedLevelIndex = levels
+            .indexOfFirst { it.id == firstUnfinishedLevelId }
+            .takeIf { it != -1 } ?: 0
 
-            val nextLevelData = levels[firstUnfinishedLevelIndex]
-            Solver.clearCache()
-            undoManager.clear()
-            _uiState.update {
-                UiState.Loaded(
-                    levels = levels,
-                    level = firstUnfinishedLevelIndex,
-                    levelData = nextLevelData,
+        val nextLevelData = levels[firstUnfinishedLevelIndex]
+        Solver.clearCache()
+        undoManager.clear()
+        _uiState.update {
+            UiState.Loaded(
+                levels = levels,
+                level = firstUnfinishedLevelIndex,
+                levelData = nextLevelData,
 
-                    canMovePreviousLevel = firstUnfinishedLevelIndex > 0,
-                    canMoveNextLevel = false,
+                canMovePreviousLevel = firstUnfinishedLevelIndex > 0,
+                canMoveNextLevel = firstUnfinishedLevelId == null && levels.size > 1,
 
-                    hasHints = !Solver.getBestMoveSequence(nextLevelData).isNullOrEmpty(),
-                    possibleMoves = Game.getPossibleMoves(nextLevelData),
-                )
-            }
-
-            calculateHintCooldown()
+                hasHints = !Solver.getBestMoveSequence(nextLevelData).isNullOrEmpty(),
+                possibleMoves = Game.getPossibleMoves(nextLevelData),
+            )
         }
+
+        calculateHintCooldown()
     }
 
     private fun loadNextLevel() {
-        val levelData = loadedState.levels[loadedState.level + 1]
+        val nextLevelIndex = loadedState.level + 1
+        val levelData = loadedState.levels[nextLevelIndex]
         val firstUnfinishedLevelIndex = loadedState.levels.indexOfFirst {
             it.id == firstUnfinishedLevelId
         }
@@ -101,10 +96,11 @@ internal class GameViewModel(
         undoManager.clear()
         _uiState.update {
             loadedState.copy(
-                level = loadedState.level + 1,
+                level = nextLevelIndex,
 
-                canMovePreviousLevel = loadedState.level + 1 > 0,
-                canMoveNextLevel = loadedState.level + 1 < firstUnfinishedLevelIndex,
+                canMovePreviousLevel = nextLevelIndex > 0,
+                canMoveNextLevel = nextLevelIndex < loadedState.levels.lastIndex &&
+                        (firstUnfinishedLevelId == null || nextLevelIndex < firstUnfinishedLevelIndex),
             )
         }
 
@@ -112,7 +108,8 @@ internal class GameViewModel(
     }
 
     private fun loadPreviousLevel() {
-        val levelData = loadedState.levels[loadedState.level - 1]
+        val nextLevelIndex = loadedState.level - 1
+        val levelData = loadedState.levels[nextLevelIndex]
         val firstUnfinishedLevelIndex = loadedState.levels.indexOfFirst {
             it.id == firstUnfinishedLevelId
         }
@@ -121,10 +118,11 @@ internal class GameViewModel(
         undoManager.clear()
         _uiState.update {
             loadedState.copy(
-                level = loadedState.level - 1,
+                level = nextLevelIndex,
 
-                canMovePreviousLevel = loadedState.level - 1 > 0,
-                canMoveNextLevel = loadedState.level - 1 < firstUnfinishedLevelIndex,
+                canMovePreviousLevel = nextLevelIndex > 0,
+                canMoveNextLevel = nextLevelIndex < loadedState.levels.lastIndex &&
+                        (firstUnfinishedLevelId == null || nextLevelIndex < firstUnfinishedLevelIndex),
             )
         }
 
@@ -153,8 +151,9 @@ internal class GameViewModel(
         }
     }
 
-    private fun calculateHintCooldown() {
+    private suspend fun calculateHintCooldown() {
         if (isTestLevel) {
+            cooldownTimerJob?.cancel()
             return _uiState.update {
                 loadedState.copy(
                     hintCooldown = 0L,
@@ -163,35 +162,33 @@ internal class GameViewModel(
             }
         }
 
-        viewModelScope.launch {
-            val cooldownInMilliseconds = settingsRepository.getCooldownUntilNextHint()
-            val cooldown = cooldownInMilliseconds.milliseconds.inWholeSeconds
-            _uiState.update {
-                loadedState.copy(
-                    hintCooldown = cooldown,
-                    canHint = cooldown == 0L,
-                )
-            }
+        val cooldownInMilliseconds = settingsRepository.getCooldownUntilNextHint()
+        val cooldown = cooldownInMilliseconds.milliseconds.inWholeSeconds
+        _uiState.update {
+            loadedState.copy(
+                hintCooldown = cooldown,
+                canHint = cooldown == 0L,
+            )
+        }
 
-            cooldownTimerJob?.cancel()
-            if (cooldown != 0L) {
-                cooldownTimerJob = launch {
-                    flow {
-                        while (isActive) {
-                            delay(1.seconds)
-                            emit(Unit)
-                        }
-                    }.collectLatest {
-                        _uiState.update {
-                            loadedState.copy(
-                                hintCooldown = loadedState.hintCooldown - 1,
-                                canHint = loadedState.hintCooldown == 1L,
-                            )
-                        }
+        cooldownTimerJob?.cancel()
+        if (cooldown != 0L) {
+            cooldownTimerJob = viewModelScope.launch {
+                flow {
+                    while (isActive) {
+                        delay(1.seconds)
+                        emit(Unit)
+                    }
+                }.collectLatest {
+                    _uiState.update {
+                        loadedState.copy(
+                            hintCooldown = loadedState.hintCooldown - 1,
+                            canHint = loadedState.hintCooldown == 1L,
+                        )
+                    }
 
-                        if (loadedState.hintCooldown == 0L) {
-                            cooldownTimerJob?.cancel()
-                        }
+                    if (loadedState.hintCooldown == 0L) {
+                        cooldownTimerJob?.cancel()
                     }
                 }
             }
