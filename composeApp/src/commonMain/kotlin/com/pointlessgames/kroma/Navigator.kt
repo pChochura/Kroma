@@ -101,11 +101,11 @@ internal class Navigator(private val backStack: NavBackStack<NavKey>) {
     }
 
     fun navigateBackFromTestLevel() {
-        backStack.removeLast()
+        backStack.removeLastOrNull()
     }
 
     fun navigateToFinishedGame() {
-        backStack.removeLast()
+        backStack.removeLastOrNull()
         backStack.add(Route.LevelCreator)
     }
 
