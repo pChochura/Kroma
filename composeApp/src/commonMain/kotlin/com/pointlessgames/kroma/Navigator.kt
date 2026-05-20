@@ -131,7 +131,7 @@ internal class Navigator(private val backStack: NavBackStack<NavKey>) {
 
     fun navigateBackFromTutorial() {
         backStack.removeLast()
-        if (backStack.last() != Route.Game) {
+        if (backStack.last() == Route.Start) {
             backStack.add(Route.Game)
         }
     }
