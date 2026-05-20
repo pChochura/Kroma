@@ -6,7 +6,9 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.EaseIn
 import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateOffsetAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -94,7 +96,11 @@ internal fun GameGrid(
     )
     val animatedCurrentOffset by animateOffsetAsState(
         targetValue = currentOffset,
-        animationSpec = tween(ANIMATION_DURATION, delayMillis = ANIMATION_DURATION),
+        animationSpec = spring(
+            dampingRatio = 0.8f,
+            stiffness = Spring.StiffnessLow,
+            visibilityThreshold = Offset(x = 10f, y = 10f),
+        ),
         finishedListener = {
             displayedPossibleMoves = possibleMoves
             displayedPosition = currentPosition
