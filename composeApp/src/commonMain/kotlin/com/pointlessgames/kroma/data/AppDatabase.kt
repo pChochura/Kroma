@@ -5,6 +5,8 @@ import androidx.room.ConstructedBy
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.RoomDatabaseConstructor
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.execSQL
 import com.pointlessgames.kroma.data.dao.LevelDao
 import com.pointlessgames.kroma.data.entity.LevelEntity
 import kotlinx.coroutines.Dispatchers
@@ -32,6 +34,15 @@ expect object AppDatabaseConstructor : RoomDatabaseConstructor<AppDatabase> {
 
 internal fun createDatabase(
     builder: RoomDatabase.Builder<AppDatabase>,
+    sqlStatement: String,
 ): AppDatabase = builder
+    .addCallback(
+        object : RoomDatabase.Callback() {
+            override fun onCreate(connection: SQLiteConnection) {
+                super.onCreate(connection)
+                connection.execSQL(sqlStatement)
+            }
+        },
+    )
     .setQueryCoroutineContext(Dispatchers.IO)
     .build()
